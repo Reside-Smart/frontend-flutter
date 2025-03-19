@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 mixin GlobalFunctions {
   void showLoadingDialog() {
-    if (Get.isSnackbarOpen) {
+    if (Get.isDialogOpen!) {
       Get.back();
     }
     Get.dialog(

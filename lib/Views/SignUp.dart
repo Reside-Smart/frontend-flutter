@@ -1,7 +1,7 @@
+import 'package:reside_smart_flutter/Controllers/SignUpController.dart';
 import 'package:reside_smart_flutter/Widgets/MyAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Controllers/AuthController.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyTitle.dart';
 
@@ -13,38 +13,16 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
-  var isLoading = false.obs;
-  final AuthController authController = Get.find<AuthController>();
+  final SignUpController signUpController = Get.find<SignUpController>();
   final formKey = GlobalKey<FormState>();
 
-  late final TextEditingController fullNameController = TextEditingController();
+  late final TextEditingController nameController = TextEditingController();
   late final TextEditingController phoneNumberController =
       TextEditingController();
   late final TextEditingController emailController = TextEditingController();
   late final TextEditingController passwordController = TextEditingController();
   late final TextEditingController passwordConfirmationController =
       TextEditingController();
-
-  Future<void> _submitForm() async {
-    // if (isLoading.value) return;
-
-    // final isValid = formKey.currentState!.validate();
-    // if (!isValid) {
-    //   return;
-    // }
-    // isLoading = true.obs;
-    // final isSuccess = await authController.signUp(
-    //   fullNameController.text.trim(),
-    //   phoneNumberController.text.trim(),
-    //   emailController.text.trim(),
-    //   passwordController.text.trim(),
-    //   passwordConfirmationController.text.trim(),
-    // );
-    // isLoading = false.obs;
-    // if (isSuccess) {
-    //   Get.toNamed('home');
-    // }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +55,11 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                     ),
                     // Name TextFormField
                     TextFormField(
-                      controller: fullNameController,
+                      controller: nameController,
                       decoration: InputDecoration(
                         labelText: "Name",
                         prefixIcon: const Icon(Icons.person),
-                        // Show full name error
+                        errorText: signUpController.fieldErrors['name'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -97,7 +75,9 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                       decoration: InputDecoration(
                         labelText: "Phone Number",
                         prefixIcon: const Icon(Icons.phone),
+                        errorText: signUpController.fieldErrors['phone_number'],
                       ),
+                      keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Field is required";
@@ -112,6 +92,7 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                       decoration: InputDecoration(
                         labelText: "Email",
                         prefixIcon: const Icon(Icons.email),
+                        errorText: signUpController.fieldErrors['email'],
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
@@ -131,21 +112,16 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: const Icon(Icons.lock),
+                        errorText: signUpController.fieldErrors['password'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Field is required";
                         }
-                        if (value.length < 8) {
-                          return "Password must be at least 8 characters";
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
                         }
-                        if (passwordConfirmationController.text
-                                .trim()
-                                .isNotEmpty &&
-                            value !=
-                                passwordConfirmationController.text.trim()) {
-                          return "Passwords do not match";
-                        }
+
                         return null;
                       },
                       obscureText: true,
@@ -162,6 +138,10 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                         if (value!.isEmpty) {
                           return "Field is required";
                         }
+                        if (passwordController.text.trim().isNotEmpty &&
+                            value != passwordController.text.trim()) {
+                          return "Passwords do not match";
+                        }
                         return null;
                       },
                       obscureText: true,
@@ -170,10 +150,19 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
 
                     ElevatedButton(
                       onPressed: () {
-                        Get.toNamed('verifyEmail');
+                        if (!signUpController.isLoading.value &&
+                            formKey.currentState!.validate()) {
+                          signUpController.registerUser(
+                            nameController.text.trim(),
+                            emailController.text.trim(),
+                            phoneNumberController.text.trim(),
+                            passwordController.text.trim(),
+                            passwordConfirmationController.text.trim(),
+                          );
+                        }
                       },
                       child:
-                          isLoading.value
+                          signUpController.isLoading.value
                               ? const SizedBox(
                                 width: 20,
                                 height: 20,

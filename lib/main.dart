@@ -2,7 +2,7 @@ import 'package:reside_smart_flutter/Bindings/GlobalBinding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:reside_smart_flutter/Utils/Api.dart';
+import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Utils/Theme.dart';
 import 'Routes/AppRoutes.dart';
 

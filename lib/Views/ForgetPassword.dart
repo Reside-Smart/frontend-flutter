@@ -1,8 +1,8 @@
+import 'package:reside_smart_flutter/Controllers/ForgetPasswordController.dart';
 import 'package:reside_smart_flutter/Widgets/MyAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Controllers/AuthController.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyTitle.dart';
 
@@ -15,14 +15,11 @@ class ForgetPasswordPage extends StatefulWidget {
 
 class _ForgetPasswordPageState extends State<ForgetPasswordPage>
     with GlobalFunctions {
-  var isLoading = false.obs;
-  final AuthController authController = Get.find<AuthController>();
-
+  final ForgetPasswordController _forgetPasswordController =
+      Get.find<ForgetPasswordController>();
   final formKey = GlobalKey<FormState>();
 
   late final TextEditingController emailController = TextEditingController();
-
-  Future<void> _submitForm() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -66,14 +63,16 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                       decoration: InputDecoration(
                         labelText: "Enter Email",
                         prefixIcon: const Icon(Icons.email),
-                        errorText: authController.fieldErrors['full_name'],
+                        errorText:
+                            _forgetPasswordController.fieldErrors['email'],
                         // Show full name error
                       ),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Field is required";
+                        }
+                        if (!GetUtils.isEmail(value)) {
+                          return "Invalid email address";
                         }
                         return null;
                       },
@@ -82,10 +81,15 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                     // ForgetPasswordPage Button
                     ElevatedButton(
                       onPressed: () {
-                        Get.offAllNamed('enable-gps');
+                        if (!_forgetPasswordController.isLoading.value &&
+                            formKey.currentState!.validate()) {
+                          _forgetPasswordController.forgetPassword(
+                            email: emailController.text.trim(),
+                          );
+                        }
                       },
                       child:
-                          isLoading.value
+                          _forgetPasswordController.isLoading.value
                               ? const SizedBox(
                                 width: 20,
                                 height: 20,

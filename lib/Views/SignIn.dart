@@ -1,7 +1,7 @@
+import 'package:reside_smart_flutter/Controllers/SignInController.dart';
 import 'package:reside_smart_flutter/Widgets/MyAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Controllers/AuthController.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyTitle.dart';
 
@@ -13,30 +13,11 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> with GlobalFunctions {
-  var isLoading = false.obs;
-  final AuthController authController = Get.find<AuthController>();
+  final SignInController signInController = Get.find<SignInController>();
   final formKey = GlobalKey<FormState>();
 
-  late final TextEditingController phoneNumberController =
-      TextEditingController();
+  late final TextEditingController emailController = TextEditingController();
   late final TextEditingController passwordController = TextEditingController();
-
-  // Future<void> _submitForm() async {
-  //   if (isLoading.value) return;
-  //   final isValid = formKey.currentState!.validate();
-  //   if (!isValid) {
-  //     return;
-  //   }
-  //   isLoading = true.obs;
-  //   final isSuccess = await authController.signUp(
-  //     phoneNumberController.text.trim(),
-  //     passwordController.text.trim()
-  //   );
-  //   isLoading = false.obs;
-  //   if (isSuccess) {
-  //     Get.toNamed('home');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +50,11 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                     ),
                     // Phone Number
                     TextFormField(
-                      controller: phoneNumberController,
+                      controller: emailController,
                       decoration: InputDecoration(
                         labelText: "Email",
                         prefixIcon: Icon(Icons.email),
-                        errorText: authController.fieldErrors['phone_number'],
+                        errorText: signInController.fieldErrors['phone_number'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -89,14 +70,14 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: Icon(Icons.lock),
-                        errorText: authController.fieldErrors['password'],
+                        errorText: signInController.fieldErrors['password'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Field is required";
                         }
-                        if (value.length < 8) {
-                          return "Password must be at least 8 characters";
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
                         }
                         return null;
                       },
@@ -129,11 +110,16 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                     // Signup Button
                     ElevatedButton(
                       onPressed: () {
-                        // _submitForm();
-                        Get.offAllNamed('user-selection');
+                        if (!signInController.isLoading.value &&
+                            formKey.currentState!.validate()) {
+                          signInController.loginUser(
+                            emailController.text.trim(),
+                            passwordController.text.trim(),
+                          );
+                        }
                       },
                       child:
-                          isLoading.value
+                          signInController.isLoading.value
                               ? SizedBox(
                                 width: 20,
                                 height: 20,

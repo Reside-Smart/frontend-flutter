@@ -1,8 +1,8 @@
+import 'package:reside_smart_flutter/Controllers/VerifyEmailController.dart';
 import 'package:reside_smart_flutter/Widgets/MyAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Controllers/AuthController.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyTitle.dart';
 
@@ -15,14 +15,10 @@ class VerifyEmailPage extends StatefulWidget {
 
 class _VerifyEmailPageState extends State<VerifyEmailPage>
     with GlobalFunctions {
-  var isLoading = false.obs;
-  final AuthController authController = Get.find<AuthController>();
+  final VerifyEmailController _verifyEmailController = VerifyEmailController();
   final formKey = GlobalKey<FormState>();
 
-  late final TextEditingController verificationCodeController =
-      TextEditingController();
-
-  Future<void> _submitForm() async {}
+  late final TextEditingController otpController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +75,12 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                     ),
                     // Name TextFormField
                     TextFormField(
-                      controller: verificationCodeController,
-
+                      controller: otpController,
                       decoration: InputDecoration(
                         labelText: "Enter Verification Code",
                         prefixIcon: const Icon(Icons.lock),
                         border: const OutlineInputBorder(),
-                        errorText: authController.fieldErrors['full_name'],
+                        // errorText: authController.fieldErrors['full_name'],
                         // Show full name error
                       ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -94,6 +89,9 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                         if (value!.isEmpty) {
                           return "Field is required";
                         }
+                        if (value.length > 6) {
+                          return "Maximum 6.";
+                        }
                         return null;
                       },
                     ),
@@ -101,7 +99,12 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                     // VerifyEmail Button
                     ElevatedButton(
                       onPressed: () {
-                        Get.offAllNamed('user-selection');
+                        if (!_verifyEmailController.isLoading.value &&
+                            formKey.currentState!.validate()) {
+                          _verifyEmailController.veriyfEmailUser(
+                            otpController.text.trim(),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
@@ -110,7 +113,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                         textStyle: TextStyle(fontSize: screenWidth * 0.045),
                       ),
                       child:
-                          isLoading.value
+                          _verifyEmailController.isLoading.value
                               ? const SizedBox(
                                 width: 20,
                                 height: 20,
@@ -137,7 +140,14 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            if (!_verifyEmailController.isLoading.value &&
+                                formKey.currentState!.validate()) {
+                              _verifyEmailController.veriyfEmailUser(
+                                otpController.text.trim(),
+                              );
+                            }
+                          },
                           child: Text("Resend."),
                         ),
                       ],
