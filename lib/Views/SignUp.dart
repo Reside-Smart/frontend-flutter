@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:reside_smart_flutter/Controllers/SignUpController.dart';
 import 'package:reside_smart_flutter/Widgets/MyAppBar.dart';
 import 'package:flutter/material.dart';
@@ -70,19 +72,19 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                     ),
                     SizedBox(height: screenHeight * 0.03),
                     // Username TextFormField
-                    TextFormField(
-                      controller: phoneNumberController,
+                    IntlPhoneField(
                       decoration: InputDecoration(
                         labelText: "Phone Number",
                         prefixIcon: const Icon(Icons.phone),
                         errorText: signUpController.fieldErrors['phone_number'],
+                        counterText: '',
                       ),
+                      autovalidateMode: AutovalidateMode.onUnfocus,
                       keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return "Field is required";
-                        }
-                        return null;
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      initialCountryCode: 'LB',
+                      onChanged: (phone) {
+                        phoneNumberController.text = phone.completeNumber;
                       },
                     ),
                     SizedBox(height: screenHeight * 0.03),
