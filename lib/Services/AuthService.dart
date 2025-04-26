@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart' as dio;
+import 'package:dio/dio.dart%20';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:reside_smart_flutter/Models/UserModel.dart';
@@ -22,11 +24,10 @@ class AuthService extends GetxService {
         isLoggedIn.value = true;
 
         try {
-          GetStorage().remove('login_token');
           globalUser = await getLoggedInUser();
           isLoggedIn.value = true;
           AppDialog.showSuccess('Logged In Successfully!');
-          Get.offAllNamed('home');
+          Get.offAllNamed('navbar');
         } catch (e) {
           AppDialog.showError('An error occurred while fetching user data.');
           GetStorage().remove('login_token');
@@ -97,9 +98,55 @@ class AuthService extends GetxService {
     return true;
   }
 
+  Future<void> logout() async {
+    try {
+      final response = await Api.dio.post('/logout');
+
+      if (response.statusCode == 200) {
+        await GetStorage().remove('login_token');
+        isLoggedIn.value = false;
+        globalUser = null;
+        Get.offAllNamed('signIn');
+      }
+    } on DioException catch (e) {
+      print(e);
+    }
+  }
+
   Future<bool> forgetPassword({required String email}) async {
     await Api.dio.post('/forget-password', data: {'email': email});
 
     return true;
+  }
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await Api.dio.put(
+      '/user/change-password',
+      data: {
+        'current_password': oldPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword,
+      },
+    );
+  }
+
+  Future<UserModel> editProfile({required dio.FormData form}) async {
+    final response = await Api.dio.post('/user/edit-profile', data: form);
+    print(response);
+    final UserModel user = UserModel.fromJson({...response.data['user']});
+
+    return user;
+  }
+
+  Future<UserModel> completeprofile({required dio.FormData form}) async {
+    final response = await Api.dio.post('/complete-profile', data: form);
+    print(response);
+    final UserModel user = UserModel.fromJson({...response.data['user']});
+
+    return user;
   }
 }

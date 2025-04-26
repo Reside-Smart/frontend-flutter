@@ -1,8 +1,10 @@
 class UserModel {
   final int id;
-  final String name;
-  final String email;
-  final String phoneNumber;
+  String name;
+  String email;
+  String phoneNumber;
+  String? image;
+  String? address;
   final String? token;
 
   UserModel({
@@ -10,6 +12,8 @@ class UserModel {
     required this.name,
     required this.email,
     required this.phoneNumber,
+    this.image,
+    this.address,
     this.token,
   });
 
@@ -19,16 +23,25 @@ class UserModel {
       name: json['name'],
       email: json['email'],
       phoneNumber: json['phone_number'],
-      token: json['token'],
+      image: json['image']?.toString(),
+      address: json['address'],
+      token: json['token']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'email': email, 'phoneNumber': phoneNumber};
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'image': image,
+      'address': address,
+    };
   }
 
   @override
   String toString() {
-    return 'UserModel{name: $name,phoneNumberL $phoneNumber , email: $email}';
+    return 'UserModel{name: $name,phoneNumberL $phoneNumber , email: $email , image: $image, address: $address}';
   }
 }

@@ -1,26 +1,34 @@
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Models/UserModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 
-class SignInController extends GetxController {
+class ChangePasswordController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
   final RxBool isLoading = false.obs;
   var fieldErrors = <String, String>{}.obs;
 
-  Future<void> loginUser(String email, String password) async {
+  Future<void> changePassword(
+    String oldPassword,
+    String newPassword,
+    String confirmPassword,
+  ) async {
     try {
       isLoading.value = true;
-      fieldErrors.value = {};
+      fieldErrors.clear();
 
-      final UserModel user = await _authService.login(
-        email: email,
-        password: password,
+      if (newPassword != confirmPassword) {
+        fieldErrors['confirm'] = 'Passwords do not match';
+        return;
+      }
+
+      await _authService.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
       );
 
-      _authService.globalUser = user;
-      print(_authService.globalUser);
-      Get.toNamed('/navbar');
+      AppDialog.showSuccess('Password changed successfully');
     } catch (e) {
       _handleError(e);
     } finally {
@@ -36,7 +44,7 @@ class SignInController extends GetxController {
       });
     } else {
       fieldErrors['general'] =
-          e.response?.data['message'] ?? 'An error occurred';
+          e.response?.data['message'] ?? 'Something went wrong.';
     }
   }
 }
