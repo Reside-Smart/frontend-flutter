@@ -19,8 +19,8 @@ class VerifyEmailController extends GetxController {
       );
 
       if (emailVerified) {
-        AppDialog.showSuccess("Email Verified Successfully!");
-        Get.toNamed('/home');
+        // AppDialog.showSuccess("Email Verified Successfully!");
+        Get.offAllNamed('/completeProfile');
       }
     } catch (e) {
       _handleError(e);
