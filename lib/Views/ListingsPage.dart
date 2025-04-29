@@ -41,72 +41,79 @@ class _ListingsPageState extends State<ListingsPage> with GlobalFunctions {
             horizontal: screenWidth * 0.05,
             vertical: screenHeight * 0.02,
           ),
-          child: Obx(
-            () => RefreshIndicator(
-              onRefresh: () async {
-                await listingsController.fetchListings(selectedStatus);
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        DropdownButton<String>(
-                          value: selectedStatus,
-                          items:
-                              ['published', 'draft'].map((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedStatus = newValue!;
-                            });
-                            listingsController.fetchListings(newValue!);
-                          },
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Get.toNamed('add-listing');
-                          },
-                          icon: Icon(Icons.add),
-                          label: Text('Add'),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await listingsController.fetchListings(selectedStatus);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DropdownButton<String>(
+                        value: selectedStatus,
+                        items:
+                            ['Published', 'Draft'].map((String dropDownValue) {
+                              return DropdownMenuItem<String>(
+                                value: dropDownValue.toLowerCase(),
+                                child: Text(dropDownValue),
+                              );
+                            }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedStatus = newValue!;
+                          });
+                          listingsController.fetchListings(newValue!);
+                        },
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Get.toNamed('add-listing');
+                        },
+                        icon: Icon(Icons.add),
+                        label: Text('Add'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 30),
-                    Wrap(
-                      runSpacing: 18.0,
-                      children:
-                          listingsController.listings.map((listing) {
-                            return PropertyCard(
-                              id: listing.id!,
-                              image:
-                                  (listing.images != null &&
-                                          listing.images!.isNotEmpty)
-                                      ? listing.images!.first
-                                      : '',
-                              name: listing.name ?? 'No name',
-                              price: listing.price?.toString() ?? '',
-                              rating: listing.averageReviews?.toString() ?? '',
-                              location: listing.address ?? 'No address',
-                              type: listing.type ?? '',
-                              rentalOptions: listing.rentalOption ?? [],
-                            );
-                          }).toList(),
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  Obx(
+                    () =>
+                        listingsController.isLoading.value
+                            ? Center(child: CircularProgressIndicator())
+                            : listingsController.listings.isEmpty
+                            ? Center(child: Text('No Listings Found!'))
+                            : Wrap(
+                              runSpacing: 18.0,
+                              children:
+                                  listingsController.listings.map((listing) {
+                                    return PropertyCard(
+                                      id: listing.id!,
+                                      image:
+                                          (listing.images != null &&
+                                                  listing.images!.isNotEmpty)
+                                              ? listing.images!.first
+                                              : '',
+                                      name: listing.name ?? 'No name',
+                                      price: listing.price?.toString() ?? '',
+                                      rating:
+                                          listing.averageReviews?.toString() ??
+                                          '',
+                                      location: listing.address ?? 'No address',
+                                      type: listing.type ?? '',
+                                      rentalOptions: listing.rentalOption ?? [],
+                                    );
+                                  }).toList(),
+                            ),
+                  ),
+                ],
               ),
             ),
           ),

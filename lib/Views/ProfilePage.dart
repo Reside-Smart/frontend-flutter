@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
+import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -59,104 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.white),
-              child: Row(
-                children: [
-                  Container(
-                    width: 90, // Slightly larger avatar
-                    height: 90,
-                    child:
-                        authService.globalUser?.image != null
-                            ? isLoading.value
-                                ? CircularProgressIndicator(
-                                  color: Theme.of(context).primaryColor,
-                                )
-                                : ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: MyNetworkImage(
-                                    url:
-                                        "storage/${authService.globalUser?.image}",
-                                  ),
-                                )
-                            : Icon(Icons.person, size: 90),
-                  ),
-                  SizedBox(width: 20),
-                  Column(
-                    children: [
-                      Padding(padding: EdgeInsets.all(21)),
-                      Text(
-                        authService.globalUser!.name,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        authService.globalUser!.email,
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.notifications),
-              title: Text("Notifications"),
-              onTap: () {
-                // Handle action
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.house_rounded),
-              title: Text("Listing"),
-              onTap: () {
-                Get.toNamed('listing');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.assignment),
-              title: Text("Transaction"),
-              onTap: () {
-                // Handle action
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text("Profile"),
-              onTap: () {
-                // Handle action
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.chat),
-              title: Text("Chatbot"),
-              onTap: () {
-                // Handle action
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text("Logout"),
-              onTap: () {
-                AppDialog.showConfirm(
-                  title: "Logout",
-                  message: "Are you sure you want to logout?",
-                  onConfirm: () {
-                    Get.find<AuthService>().logout();
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: MyDrawer(authService: authService),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
