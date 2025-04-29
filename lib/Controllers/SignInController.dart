@@ -20,7 +20,7 @@ class SignInController extends GetxController {
 
       _authService.globalUser = user;
       print(_authService.globalUser);
-      Get.toNamed('/navbar');
+      Get.offAllNamed('/navbar');
     } catch (e) {
       _handleError(e);
     } finally {

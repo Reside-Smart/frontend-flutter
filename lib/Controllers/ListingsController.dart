@@ -10,6 +10,7 @@ class ListingsController extends GetxController {
   var fieldErrors = <String, String>{}.obs;
 
   Future<void> fetchListings(String status) async {
+    if (isLoading.value) return;
     try {
       isLoading.value = true;
       fieldErrors.clear();

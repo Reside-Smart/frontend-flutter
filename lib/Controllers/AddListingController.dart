@@ -29,6 +29,7 @@ class AddListingController extends GetxController {
     try {
       isLoading.value = true;
       fieldErrors.clear();
+
       dio.FormData formData = dio.FormData.fromMap({
         'name': name,
         'type': type,
@@ -42,7 +43,7 @@ class AddListingController extends GetxController {
             );
           }),
         ),
-        'price': price,
+        'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
             features!
@@ -58,21 +59,23 @@ class AddListingController extends GetxController {
         ),
 
         'description': description,
-
-        'rental_options': dio.MultipartFile.fromString(
-          jsonEncode(
-            rental_options!
-                .map(
-                  (e) => {
-                    "duration": e.duration.text.trim(),
-                    "unit": e.unit.value,
-                    "price": e.price.text.trim(),
-                  },
+        'rental_options':
+            (type != null && type.toLowerCase() == "rent")
+                ? dio.MultipartFile.fromString(
+                  jsonEncode(
+                    rental_options!
+                        .map(
+                          (e) => {
+                            "duration": e.duration.text.trim(),
+                            "unit": e.unit.value,
+                            "price": e.price.text.trim(),
+                          },
+                        )
+                        .toList(),
+                  ),
+                  contentType: MediaType('application', 'json'),
                 )
-                .toList(),
-          ),
-          contentType: MediaType('application', 'json'),
-        ),
+                : null,
       });
 
       await _listingservice.saveAsDraft(formData: formData);
@@ -113,7 +116,7 @@ class AddListingController extends GetxController {
             );
           }),
         ),
-        'price': price,
+        'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
             features!
@@ -129,21 +132,23 @@ class AddListingController extends GetxController {
         ),
 
         'description': description,
-
-        'rental_options': dio.MultipartFile.fromString(
-          jsonEncode(
-            rental_options!
-                .map(
-                  (e) => {
-                    "duration": e.duration.text.trim(),
-                    "unit": e.unit.value,
-                    "price": e.price.text.trim(),
-                  },
+        'rental_options':
+            (type != null && type.toLowerCase() == "rent")
+                ? dio.MultipartFile.fromString(
+                  jsonEncode(
+                    rental_options!
+                        .map(
+                          (e) => {
+                            "duration": e.duration.text.trim(),
+                            "unit": e.unit.value,
+                            "price": e.price.text.trim(),
+                          },
+                        )
+                        .toList(),
+                  ),
+                  contentType: MediaType('application', 'json'),
                 )
-                .toList(),
-          ),
-          contentType: MediaType('application', 'json'),
-        ),
+                : null,
       });
 
       await _listingservice.saveAsPublished(formData: formData);

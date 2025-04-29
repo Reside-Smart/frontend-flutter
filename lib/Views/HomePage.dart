@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Controllers/HomeController.dart';
 import 'package:reside_smart_flutter/Models/ListingDiscountModel.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
+import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyHomeListingCard.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final HomeController _homeController = Get.find<HomeController>();
+  final AuthService authService = Get.find<AuthService>();
 
   final topLocations = [
     Location(name: 'Bali'),
@@ -36,6 +39,7 @@ class _HomePageState extends State<HomePage> {
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      drawer: MyDrawer(authService: authService),
       body: SafeArea(
         bottom: false,
         child: Stack(

@@ -14,11 +14,17 @@ class _LandingPageState extends State<LandingPage> {
   final PageController _pageController = PageController();
 
   final List<Map<String, String>> pages = [
-    {"image": "images/landing-1.png", "text": "Welcome to Reside Smart"},
-    {"image": "images/landing-2.png", "text": "Connect with Real-Time Updates"},
+    {
+      "image": "images/landing-1.png",
+      "text": "Discover Your Dream Home with Reside Smart",
+    },
+    {
+      "image": "images/landing-2.png",
+      "text": "Track Market Trends & Property Alerts",
+    },
     {
       "image": "images/landing-3.png",
-      "text": "Share your moments with the world",
+      "text": "Close Deals Seamlessly with Reside Smart",
     },
   ];
 
