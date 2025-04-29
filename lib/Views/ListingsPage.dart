@@ -16,8 +16,9 @@ class ListingsPage extends StatefulWidget {
 class _ListingsPageState extends State<ListingsPage> with GlobalFunctions {
   final formKey = GlobalKey<FormState>();
   String selectedStatus = 'published';
+
   void initState() {
-    super.initState(); // Don't forget this
+    super.initState();
     final ListingsController listingsController =
         Get.find<ListingsController>();
     listingsController.fetchListings(selectedStatus);

@@ -251,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          "Listings",
+                          "Dashboard",
                           style: TextStyle(
                             color:
                                 selectedTab == 1
@@ -301,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Text(
-                        "No listings available",
+                        "No analytics available",
                         style: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                     ),

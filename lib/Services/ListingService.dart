@@ -59,11 +59,25 @@ class ListingService extends GetxService {
   }) async {
     print(formData.fields);
     print(formData.files);
-    final response = await Api.dio.post(
+    final response = await Api.dio.put(
       '/listings-update-draft/$id',
       data: formData,
       options: dio.Options(headers: {'Content-Type': 'multipart/form-data'}),
     );
     print(response);
+  }
+
+  Future<ListingModel> getSingleListing(int id) async {
+    try {
+      final response = await Api.dio.get('/show-single-listing/$id');
+      print('Full Response Data: ${response.data}');
+      if (response.statusCode == 200) {
+        return ListingModel.fromJson(response.data['listing']);
+      } else {
+        throw Exception('Failed to fetch listings');
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 }
