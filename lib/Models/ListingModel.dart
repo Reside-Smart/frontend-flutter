@@ -2,7 +2,7 @@ class ListingModel {
   final int? id;
   String? name;
   String? type;
-  String? categoryId;
+  int? categoryId;
   String? address;
   List<String>? images;
   double? price;
@@ -14,6 +14,7 @@ class ListingModel {
   Map<String, dynamic>? location;
   final int? userId;
   List<Map<String, dynamic>>? rentalOption;
+  bool isFavorite;
 
   ListingModel({
     this.id,
@@ -31,6 +32,7 @@ class ListingModel {
     this.location,
     this.userId,
     this.rentalOption,
+    this.isFavorite = false,
   });
 
   factory ListingModel.fromJson(Map<String, dynamic> json) {
@@ -38,7 +40,7 @@ class ListingModel {
       id: json['id'],
       name: json['name'],
       type: json['type'],
-      categoryId: json['category'],
+      categoryId: json['category_id'],
       address: json['address'],
       images: List<String>.from(json['images'] ?? []),
       price: double.tryParse(json['price'].toString()) ?? 0.0,
@@ -55,6 +57,7 @@ class ListingModel {
           json['rental_options'] != null
               ? List<Map<String, dynamic>>.from(json['rental_options'])
               : null,
+      isFavorite: json['is_favorite'] == null ? false : (json['is_favorite']),
     );
   }
 
@@ -81,5 +84,12 @@ class ListingModel {
   @override
   String toString() {
     return 'ListingModel{name: $name, type: $type, category: $categoryId, address: $address, price: $price, images: $images, features: $features, description: $description, userId: $userId}';
+  }
+
+  double getPrice() {
+    if (price == null) return 0;
+    if (type == "sell") return price!;
+    if (type == "rent") return rentalOption![0]['price']!;
+    return 0;
   }
 }
