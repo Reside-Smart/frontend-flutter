@@ -1,14 +1,9 @@
 import 'package:dio/dio.dart' as dio;
-import 'package:dio/dio.dart%20';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
-import 'package:reside_smart_flutter/Utils/Dialog.dart';
 
 class ListingService extends GetxService {
-  final _storage = GetStorage();
-
   Future<void> saveAsDraft({required dio.FormData formData}) async {
     print(formData.fields);
     print(formData.files);
@@ -33,14 +28,25 @@ class ListingService extends GetxService {
 
   Future<List<ListingModel>> getUserListings(String status) async {
     try {
-      String? token = _storage.read('token');
-
       final response = await Api.dio.get(
         '/user/listings',
-        queryParameters:
-            status != null ? {'status': status.toLowerCase()} : null,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        queryParameters: {'status': status.toLowerCase()},
       );
+
+      if (response.statusCode == 200) {
+        List data = response.data['listings'];
+        return data.map((e) => ListingModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Failed to fetch listings');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<ListingModel>> getNearbyEstates() async {
+    try {
+      final response = await Api.dio.get('/nearby-estates');
 
       if (response.statusCode == 200) {
         List data = response.data['listings'];
@@ -79,5 +85,32 @@ class ListingService extends GetxService {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<List<ListingModel>> searchListings({
+    String? query,
+    int? categoryId,
+  }) async {
+    final params = <String, dynamic>{};
+    if (query != null && query.isNotEmpty) params['search'] = query;
+    if (categoryId != null) params['category_id'] = categoryId;
+    final response = await Api.dio.get(
+      '/listings/search',
+      queryParameters: params,
+    );
+    if (response.statusCode == 200) {
+      final data = response.data['listings'] as List;
+      return data.map((e) => ListingModel.fromJson(e)).toList();
+    }
+    throw Exception('Failed to search listings');
+  }
+
+  Future<List<ListingModel>> getFavorites() async {
+    final response = await Api.dio.get('/favorites');
+    if (response.statusCode == 200) {
+      final data = response.data['listings'] as List;
+      return data.map((e) => ListingModel.fromJson(e)).toList();
+    }
+    throw Exception('Failed to fetch favorites');
   }
 }

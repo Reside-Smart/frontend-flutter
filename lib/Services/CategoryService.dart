@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:reside_smart_flutter/Models/CategoryModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
 

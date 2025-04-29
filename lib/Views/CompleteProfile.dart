@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reside_smart_flutter/Controllers/CompleteProfileController.dart';
-import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';

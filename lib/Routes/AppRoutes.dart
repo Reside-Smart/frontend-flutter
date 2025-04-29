@@ -1,4 +1,7 @@
 import 'package:reside_smart_flutter/Bindings/AddListingBinding.dart';
+import 'package:reside_smart_flutter/Bindings/FavoritesBinding.dart';
+import 'package:reside_smart_flutter/Bindings/HomeBinding.dart';
+import 'package:reside_smart_flutter/Bindings/SearchBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SignInBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SignUpBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ForgetPasswordBinding.dart';
@@ -63,7 +66,11 @@ class AppRoutes {
       binding: ForgetPasswordBinding(),
     ),
     GetPage(name: home, page: () => HomePage()),
-    GetPage(name: navbar, page: () => BottomNavBar()),
+    GetPage(
+      name: navbar,
+      page: () => BottomNavBar(),
+      bindings: [HomeBinding(), SearchBinding(), FavoritesBinding()],
+    ),
     GetPage(
       name: '/edit-profile',
       page: () => EditProfile(),
