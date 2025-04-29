@@ -14,7 +14,7 @@ class _LandingPageState extends State<LandingPage> {
   final PageController _pageController = PageController();
 
   final List<Map<String, String>> pages = [
-    {"image": "images/landing-1.png", "text": "Welcome to BusLink"},
+    {"image": "images/landing-1.png", "text": "Welcome to Reside Smart"},
     {"image": "images/landing-2.png", "text": "Connect with Real-Time Updates"},
     {
       "image": "images/landing-3.png",
