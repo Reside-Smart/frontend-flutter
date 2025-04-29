@@ -4,6 +4,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:image_picker/image_picker.dart';
 import 'package:reside_smart_flutter/Controllers/ListingFeatureController.dart';
 import 'package:reside_smart_flutter/Controllers/RentPriceController.dart';
+import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/ListingService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
@@ -12,6 +13,7 @@ import 'package:http_parser/http_parser.dart';
 class UpdateListingController extends GetxController {
   final ListingService listingservice = Get.find<ListingService>();
   int? listingId;
+  ListingModel? listing;
 
   void setListingId(int id) {
     listingId = id;

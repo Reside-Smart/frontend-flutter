@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:reside_smart_flutter/Controllers/CategoryController.dart';
 import 'package:reside_smart_flutter/Controllers/RentPriceController.dart';
 import 'package:reside_smart_flutter/Controllers/UpdateListingController.dart';
+import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
 import 'package:flutter/material.dart';
@@ -62,12 +63,21 @@ class _UpdateListingPageState extends State<UpdateListingPage>
     super.dispose();
   }
 
+  void initializeData() async {
+    final listingId = Get.arguments['id'];
+    updateListingController.setListingId(listingId);
+    ListingModel listing = await updateListingController.listingservice
+        .getSingleListing(listingId);
+    nameController.text = listing.name!;
+    // priceController.text = listing.price;
+    addressController.text = listing.address!;
+    descriptionController.text = listing.description!;
+  }
+
   @override
   void initState() {
     super.initState();
-    final listingId = Get.arguments['id'];
-    updateListingController.setListingId(listingId);
-    print(listingId);
+    initializeData();
   }
 
   @override
