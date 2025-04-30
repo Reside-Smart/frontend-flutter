@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static final Color _primary = const Color(0xFF25B4F8);
-  static final Color _secondary = const Color(0xFFFF6584);
+  static final Color _secondary = const Color.fromARGB(255, 255, 248, 249);
   static final Color _surface = Colors.white;
 
   static ThemeData lightTheme = ThemeData(
@@ -59,6 +59,14 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: _secondary, // default (unselected) chip bg
+      disabledColor: Colors.grey.shade200, // when chip is disabled
+      selectedColor: _primary, // bg when selected
+      secondarySelectedColor: _primary.withOpacity(
+        0.1,
+      ), // stroke bg for filter chips
     ),
 
     inputDecorationTheme: InputDecorationTheme(

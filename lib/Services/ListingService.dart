@@ -59,14 +59,14 @@ class ListingService extends GetxService {
     }
   }
 
-  Future<void> UpdateAsDraft({
+  Future<void> updateAsDraft({
+    required int listingId,
     required dio.FormData formData,
-    required int id,
   }) async {
     print(formData.fields);
     print(formData.files);
     final response = await Api.dio.put(
-      '/listings-update-draft/$id',
+      '/listings-update-draft/$listingId',
       data: formData,
       options: dio.Options(headers: {'Content-Type': 'multipart/form-data'}),
     );
@@ -112,5 +112,19 @@ class ListingService extends GetxService {
       return data.map((e) => ListingModel.fromJson(e)).toList();
     }
     throw Exception('Failed to fetch favorites');
+  }
+
+  Future<void> updateAsPublished({
+    required int listingId,
+    required dio.FormData formData,
+  }) async {
+    print(formData.fields);
+    print(formData.files);
+    final response = await Api.dio.put(
+      '/listings-update-published/$listingId',
+      data: formData,
+      options: dio.Options(headers: {'Content-Type': 'multipart/form-data'}),
+    );
+    print(response);
   }
 }

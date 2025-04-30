@@ -11,12 +11,23 @@ import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:http_parser/http_parser.dart';
 
 class UpdateListingController extends GetxController {
-  final ListingService listingservice = Get.find<ListingService>();
+  final ListingService _listingservice = Get.find<ListingService>();
   int? listingId;
   ListingModel? listing;
 
   void setListingId(int id) {
     listingId = id;
+  }
+
+  Future<void> getSingleListing(int listingId) async {
+    try {
+      isLoading.value = true;
+
+      listing = await _listingservice.getSingleListing(listingId);
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   final RxBool isLoading = false.obs;
@@ -36,20 +47,25 @@ class UpdateListingController extends GetxController {
     try {
       isLoading.value = true;
       fieldErrors.clear();
+
       dio.FormData formData = dio.FormData.fromMap({
         'name': name,
         'type': type,
         'category_id': category,
         'address': address,
-        'images[]': await Future.wait(
-          images!.map((image) async {
-            return await dio.MultipartFile.fromFile(
-              image.path,
-              filename: image.name,
-            );
-          }),
-        ),
-        'price': price,
+        'images[]':
+            // images != null && images.isNotEmpty
+            //     ? await Future.wait(
+            //       images.map((image) async {
+            //         return await dio.MultipartFile.fromFile(
+            //           image.path,
+            //           filename: image.name,
+            //         );
+            //       }),
+            //     )
+            //     :
+            [],
+        'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
             features!
@@ -65,26 +81,31 @@ class UpdateListingController extends GetxController {
         ),
 
         'description': description,
-
-        'rental_options': dio.MultipartFile.fromString(
-          jsonEncode(
-            rental_options!
-                .map(
-                  (e) => {
-                    "duration": e.duration.text.trim(),
-                    "unit": e.unit.value,
-                    "price": e.price.text.trim(),
-                  },
+        'rental_options':
+            (type != null && type.toLowerCase() == "rent")
+                ? dio.MultipartFile.fromString(
+                  jsonEncode(
+                    rental_options!
+                        .map(
+                          (e) => {
+                            "duration": e.duration.text.trim(),
+                            "unit": e.unit.value,
+                            "price": e.price.text.trim(),
+                          },
+                        )
+                        .toList(),
+                  ),
+                  contentType: MediaType('application', 'json'),
                 )
-                .toList(),
-          ),
-          contentType: MediaType('application', 'json'),
-        ),
+                : null,
       });
 
-      await listingservice.UpdateAsDraft(id: listingId!, formData: formData);
+      await _listingservice.updateAsDraft(
+        listingId: listing!.id!,
+        formData: formData,
+      );
 
-      AppDialog.showSuccess('Listing updated as draft successfully');
+      AppDialog.showSuccess('Listing Updated As Draft successfully');
     } catch (e) {
       // throw e;
       _handleError(e);
@@ -108,20 +129,22 @@ class UpdateListingController extends GetxController {
       isLoading.value = true;
       fieldErrors.clear();
       dio.FormData formData = dio.FormData.fromMap({
-        'id': listingId,
         'name': name,
         'type': type,
         'category_id': category,
         'address': address,
-        'images[]': await Future.wait(
-          images!.map((image) async {
-            return await dio.MultipartFile.fromFile(
-              image.path,
-              filename: image.name,
-            );
-          }),
-        ),
-        'price': price,
+        'images[]': // images != null && images.isNotEmpty
+            //     ? await Future.wait(
+            //       images.map((image) async {
+            //         return await dio.MultipartFile.fromFile(
+            //           image.path,
+            //           filename: image.name,
+            //         );
+            //       }),
+            //     )
+            //     :
+            [],
+        'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
             features!
@@ -137,26 +160,31 @@ class UpdateListingController extends GetxController {
         ),
 
         'description': description,
-
-        'rental_options': dio.MultipartFile.fromString(
-          jsonEncode(
-            rental_options!
-                .map(
-                  (e) => {
-                    "duration": e.duration.text.trim(),
-                    "unit": e.unit.value,
-                    "price": e.price.text.trim(),
-                  },
+        'rental_options':
+            (type != null && type.toLowerCase() == "rent")
+                ? dio.MultipartFile.fromString(
+                  jsonEncode(
+                    rental_options!
+                        .map(
+                          (e) => {
+                            "duration": e.duration.text.trim(),
+                            "unit": e.unit.value,
+                            "price": e.price.text.trim(),
+                          },
+                        )
+                        .toList(),
+                  ),
+                  contentType: MediaType('application', 'json'),
                 )
-                .toList(),
-          ),
-          contentType: MediaType('application', 'json'),
-        ),
+                : null,
       });
 
-      await listingservice.UpdateAsDraft(id: listingId!, formData: formData);
+      await _listingservice.updateAsPublished(
+        listingId: listing!.id!,
+        formData: formData,
+      );
 
-      AppDialog.showSuccess('Listing Updated successfully');
+      AppDialog.showSuccess('Listing Updated As Published successfully');
     } catch (e) {
       // throw e;
       _handleError(e);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:reside_smart_flutter/Models/RentalOption.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
@@ -11,7 +12,7 @@ class PropertyCard extends StatefulWidget {
   final String rating;
   final String location;
   final String type;
-  final List<Map<String, dynamic>>? rentalOptions;
+  final List<RentalOption>? rentalOptions;
 
   PropertyCard({
     super.key,
@@ -112,7 +113,7 @@ class _PropertyCardState extends State<PropertyCard> {
                     widget.type == 'rent' &&
                             widget.rentalOptions != null &&
                             widget.rentalOptions!.isNotEmpty
-                        ? '${widget.rentalOptions!.first['price']}/${widget.rentalOptions!.first['duration']} ${widget.rentalOptions!.first['unit']}'
+                        ? '${widget.rentalOptions!.first.price}/${widget.rentalOptions!.first.duration} ${widget.rentalOptions!.first.unit}'
                         : '\$${widget.price}',
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),

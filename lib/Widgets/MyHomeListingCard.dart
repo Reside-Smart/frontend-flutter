@@ -143,9 +143,9 @@ class _MyHomeListingCardState extends State<MyHomeListingCard> {
                       ),
                       child: Text(
                         widget.listingModel.type == 'rent' &&
-                                widget.listingModel.rentalOption != null &&
-                                widget.listingModel.rentalOption!.isNotEmpty
-                            ? '${widget.listingModel.rentalOption!.first['price']}/${widget.listingModel.rentalOption!.first['duration']} ${widget.listingModel.rentalOption!.first['unit']}'
+                                widget.listingModel.rentalOptions != null &&
+                                widget.listingModel.rentalOptions!.isNotEmpty
+                            ? '${widget.listingModel.rentalOptions!.first.price}/${widget.listingModel.rentalOptions!.first.duration} ${widget.listingModel.rentalOptions!.first.unit}'
                             : '\$${widget.listingModel.price}',
                         style: const TextStyle(
                           color: Colors.white,

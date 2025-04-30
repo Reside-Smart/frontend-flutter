@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Controllers/ListingFeatureController.dart';
+import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
 class UpdateListingPage extends StatefulWidget {
   const UpdateListingPage({super.key});
@@ -32,6 +33,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   final TextEditingController descriptionController = TextEditingController();
 
   final List<XFile> _images = [];
+  final List<String> _oldImages = [];
 
   final List<String> types = ['Rent', 'Sell'];
   String? selectedType;
@@ -42,8 +44,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   final RentingOptionController rentPriceController = Get.put(
     RentingOptionController(),
   );
-
-  final List<String> units = ['day', 'week', 'month', 'year'];
 
   Future<void> _addImage() async {
     final picker = ImagePicker();
@@ -65,23 +65,38 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   void initializeData() async {
     final listingId = Get.arguments['id'];
     updateListingController.setListingId(listingId);
-    ListingModel listing = await updateListingController.listingservice
-        .getSingleListing(listingId);
-    print(listing);
-    nameController.text = listing.name ?? "";
-    selectedCategory = listing.categoryId!;
-    selectedType = listing.type;
-    priceController.text = listing.price.toString();
-    addressController.text = listing.address!;
-    descriptionController.text = listing.description!;
-    // fetch images
-    // print(listing.images);
-    // setState(() {
-    //   _images.addAll(listing.images!.map((e) => XFile(e)).toList());
-    // });
+    await updateListingController.getSingleListing(listingId);
 
-    print(_images);
-
+    nameController.text = updateListingController.listing!.name ?? "";
+    selectedCategory = updateListingController.listing!.categoryId!;
+    selectedType = updateListingController.listing!.type;
+    priceController.text = updateListingController.listing!.price.toString();
+    addressController.text = updateListingController.listing!.address!;
+    descriptionController.text = updateListingController.listing!.description!;
+    featureController.features.value =
+        updateListingController.listing!.features == null
+            ? <FeatureField>[]
+            : updateListingController.listing!.features!.map((e) {
+              var fields = FeatureField();
+              fields.feature.text = e['key'];
+              fields.number.text = e['value'];
+              return fields;
+            }).toList();
+    rentPriceController.rentOptions.value =
+        updateListingController.listing!.rentalOptions == null
+            ? []
+            : updateListingController.listing!.rentalOptions!.map((e) {
+              var fields = RentingOption();
+              fields.duration.text = e.duration.toString();
+              fields.unit.value = e.unit;
+              fields.price.text = e.price.toString();
+              return fields;
+            }).toList();
+    _oldImages.clear();
+    if (updateListingController.listing!.images != null) {
+      _oldImages.addAll(updateListingController.listing!.images!);
+    }
+    print(rentPriceController.rentOptions.value);
     setState(() {});
   }
 
@@ -225,7 +240,9 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                               selectedColor: Theme.of(context).primaryColor,
                               labelStyle: TextStyle(
                                 color:
-                                    selectedType == type
+                                    selectedType != null &&
+                                            selectedType!.toLowerCase() ==
+                                                type.toLowerCase()
                                         ? Colors.white
                                         : Colors.black,
                               ),
@@ -233,7 +250,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                           }).toList(),
                     ),
                     SizedBox(height: 20),
-                    if (selectedType == 'Rent') ...[
+                    if (selectedType != null &&
+                        selectedType!.toLowerCase() == 'rent') ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -379,7 +397,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
 
                     // Images
                     Text(
-                      "Add Images:",
+                      "Images:",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -390,6 +408,59 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                       spacing: 20.0,
                       runSpacing: 18.0,
                       children: [
+                        // show old network images
+                        ..._oldImages.map(
+                          (url) => Stack(
+                            children: [
+                              Container(
+                                width: 170,
+                                height: 170,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  child: MyNetworkImage(url: 'storage/$url'),
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() => _oldImages.remove(url));
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                        ),
+                                      ],
+                                    ),
+                                    padding: EdgeInsets.all(4),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // show newly picked images
                         ..._images.map(
                           (image) => Stack(
                             children: [
@@ -564,6 +635,12 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                       children: [
                         ElevatedButton(
                           onPressed: () {
+                            if (nameController.text.trim().isEmpty) {
+                              AppDialog.showError(
+                                'Please enter the listing name at least hob.',
+                              );
+                              return;
+                            }
                             if (selectedCategory == null) {
                               AppDialog.showError('Please select a category');
                               return;

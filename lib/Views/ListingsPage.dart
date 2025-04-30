@@ -108,7 +108,8 @@ class _ListingsPageState extends State<ListingsPage> with GlobalFunctions {
                                           '',
                                       location: listing.address ?? 'No address',
                                       type: listing.type ?? '',
-                                      rentalOptions: listing.rentalOption ?? [],
+                                      rentalOptions:
+                                          listing.rentalOptions ?? [],
                                     );
                                   }).toList(),
                             ),

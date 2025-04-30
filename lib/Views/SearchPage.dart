@@ -80,7 +80,6 @@ class _SearchPageState extends State<SearchPage> {
                         searchController.selectedCategory.value = null;
                         searchController.search();
                       },
-                      backgroundColor: const Color(0xFFF5F4F8),
                       side: BorderSide.none,
                     ),
                     const SizedBox(width: 8),
@@ -92,13 +91,11 @@ class _SearchPageState extends State<SearchPage> {
                         child: ChoiceChip(
                           label: Text(cat.name),
                           selected: sel,
-                          selectedColor: cs.primary,
                           onSelected: (_) {
                             searchController.selectedCategory.value =
                                 sel ? null : cat;
                             searchController.search();
                           },
-                          backgroundColor: const Color(0xFFF5F4F8),
                           side: BorderSide.none,
                         ),
                       );
