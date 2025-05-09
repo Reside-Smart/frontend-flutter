@@ -74,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Stack(
                   children: [
                     Container(
-                      width: 90, // Slightly larger avatar
+                      width: 90,
                       height: 90,
                       child:
                           authService.globalUser?.image != null

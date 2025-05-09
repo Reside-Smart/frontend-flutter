@@ -232,7 +232,7 @@ class _ModernDialog extends StatelessWidget {
 enum DialogType {
   success(Color(0xFF4CAF50)),
   error(Color(0xFFF44336)),
-  secondary(Color(0xFFFFBC37)),
+  secondary(Color(0xFF25B4F8)),
   primary(Color(0xFF4F659C));
 
   final Color color;

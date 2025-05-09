@@ -1,11 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Controllers/HomeController.dart';
 import 'package:reside_smart_flutter/Models/ListingDiscountModel.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
+import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyHomeListingCard.dart';
+import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -95,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     children: [
                       TextSpan(
-                        text: 'Jonathan',
+                        text: authService!.globalUser!.name,
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           inherit: false,
@@ -277,10 +280,13 @@ class DiscountCard extends StatelessWidget {
         height: 220,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('images/landing-1.png'),
+            image: CachedNetworkImageProvider(
+              '${Api.baseURL}/storage/${discount.listing!.images![0]}',
+            ),
             fit: BoxFit.cover,
           ),
         ),
+
         child: Stack(
           children: [
             // Dark overlay

@@ -25,7 +25,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   final UpdateListingController updateListingController =
       Get.find<UpdateListingController>();
   final formKey = GlobalKey<FormState>();
-  final categotyController = Get.put(CategoryController());
+  final categoryController = Get.put(CategoryController());
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -39,7 +39,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   String? selectedType;
 
   int? selectedCategory;
-
+  late String listingStatus;
   final featureController = Get.put(FeatureController());
   final RentingOptionController rentPriceController = Get.put(
     RentingOptionController(),
@@ -66,7 +66,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
     final listingId = Get.arguments['id'];
     updateListingController.setListingId(listingId);
     await updateListingController.getSingleListing(listingId);
-
+    listingStatus = updateListingController.listing!.status!;
     nameController.text = updateListingController.listing!.name ?? "";
     selectedCategory = updateListingController.listing!.categoryId!;
     selectedType = updateListingController.listing!.type;
@@ -87,16 +87,17 @@ class _UpdateListingPageState extends State<UpdateListingPage>
             ? []
             : updateListingController.listing!.rentalOptions!.map((e) {
               var fields = RentingOption();
+              fields.id = e.id;
               fields.duration.text = e.duration.toString();
               fields.unit.value = e.unit;
               fields.price.text = e.price.toString();
+              fields.isCancelled.value = e.is_cancelled;
               return fields;
             }).toList();
     _oldImages.clear();
     if (updateListingController.listing!.images != null) {
       _oldImages.addAll(updateListingController.listing!.images!);
     }
-    print(rentPriceController.rentOptions.value);
     setState(() {});
   }
 
@@ -124,12 +125,12 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                 width: 325,
                 height: 325,
                 decoration: BoxDecoration(
-                  color: const Color(0x3325B4F8), // 20% opacity
+                  color: const Color(0x3325B4F8),
                   shape: BoxShape.circle,
                 ),
               ),
             ),
-            // Smaller more opaque circle
+
             Positioned(
               top: 150,
               right: -50,
@@ -137,7 +138,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: const Color(0x6625B4F8), // 40% opacity
+                  color: const Color(0x6625B4F8),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -158,7 +159,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 40),
 
-                    // Name
                     Text(
                       "Name:",
                       style: TextStyle(
@@ -180,7 +180,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 30),
 
-                    // Category Chips
                     Text(
                       "Listing Category:",
                       style: TextStyle(
@@ -193,7 +192,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                       () => Wrap(
                         spacing: 10,
                         children:
-                            categotyController.categories.map((category) {
+                            categoryController.categories.map((category) {
                               return ChoiceChip(
                                 label: Text(category.name),
                                 selected: selectedCategory == category.id,
@@ -277,11 +276,14 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                             (index) {
                               final rentField =
                                   rentPriceController.rentOptions[index];
+                              if (rentField.isCancelled == false ||
+                                  rentField.isCancelled == 0) {
+                                return SizedBox();
+                              }
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Row(
                                   children: [
-                                    // Duration
                                     Expanded(
                                       child: TextFormField(
                                         controller: rentField.duration,
@@ -291,9 +293,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                         keyboardType: TextInputType.number,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    SizedBox(width: 2),
 
-                                    // Unit (Dropdown)
                                     Expanded(
                                       child: Obx(
                                         () => DropdownButtonFormField<String>(
@@ -319,9 +320,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                         ),
                                       ),
                                     ),
-                                    SizedBox(width: 8),
 
-                                    // Price
+                                    SizedBox(width: 2),
                                     Expanded(
                                       child: TextFormField(
                                         controller: rentField.price,
@@ -331,16 +331,109 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                         keyboardType: TextInputType.number,
                                       ),
                                     ),
-
-                                    // Delete Button
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
+                                    SizedBox(
+                                      width: 30,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        iconSize: 20,
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(),
+                                        onPressed: () {
+                                          if (rentField.id != null) {
+                                            AppDialog.showConfirm(
+                                              message:
+                                                  "Are you sure you want to cancel this renting option?",
+                                              onConfirm: () async {
+                                                updateListingController
+                                                    .cancleOption(
+                                                      rentField.id!,
+                                                    );
+                                                rentPriceController
+                                                    .removeOption(index);
+                                              },
+                                            );
+                                          } else {
+                                            rentPriceController.removeOption(
+                                              index,
+                                            );
+                                          }
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.transparent,
+                                              ),
+                                        ),
                                       ),
-                                      onPressed: () {
-                                        rentPriceController.removeOption(index);
-                                      },
+                                    ),
+
+                                    SizedBox(
+                                      width: 30,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                        ),
+                                        iconSize: 20,
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(),
+                                        onPressed: () {
+                                          if (rentField.id != null) {
+                                            AppDialog.showConfirm(
+                                              message:
+                                                  "Are you sure you want to edit this renting option?",
+                                              onConfirm: () async {
+                                                print(rentField.duration.text);
+                                                print(rentField.price.text);
+                                                print(rentField.unit);
+
+                                                updateListingController
+                                                    .editOption(
+                                                      rentField.id!,
+                                                      double.parse(
+                                                        rentField.price.text,
+                                                      ),
+                                                      rentField.unit.value,
+                                                      int.parse(
+                                                        rentField.duration.text,
+                                                      ),
+                                                    );
+                                                print(rentField.id!);
+                                              },
+                                            );
+                                          } else {
+                                            AppDialog.showConfirm(
+                                              message:
+                                                  "Are you sure you want to add this renting option?",
+                                              onConfirm: () async {
+                                                print(rentField.duration.text);
+                                                print(rentField.price.text);
+                                                print(rentField.unit);
+
+                                                updateListingController
+                                                    .addOption(
+                                                      double.parse(
+                                                        rentField.price.text,
+                                                      ),
+                                                      rentField.unit.value,
+                                                      int.parse(
+                                                        rentField.duration.text,
+                                                      ),
+                                                    );
+                                              },
+                                            );
+                                          }
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.transparent,
+                                              ),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -395,7 +488,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 30),
 
-                    // Images
                     Text(
                       "Images:",
                       style: TextStyle(
@@ -408,7 +500,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                       spacing: 20.0,
                       runSpacing: 18.0,
                       children: [
-                        // show old network images
                         ..._oldImages.map(
                           (url) => Stack(
                             children: [
@@ -435,8 +526,32 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                 right: 0,
                                 child: GestureDetector(
                                   onTap: () {
-                                    setState(() => _oldImages.remove(url));
+                                    AppDialog.showConfirm(
+                                      message:
+                                          "Are you sure you want to delete this image?",
+                                      onConfirm: () async {
+                                        print(url);
+                                        print(_oldImages);
+
+                                        if (listingStatus == 'published' &&
+                                            _oldImages.length == 1) {
+                                          AppDialog.showError(
+                                            'At least one image is required for published listings.',
+                                          );
+                                          return;
+                                        }
+
+                                        await updateListingController
+                                            .deleteImage(url);
+
+                                        setState(() => _oldImages.remove(url));
+
+                                        print(url);
+                                        print(_oldImages);
+                                      },
+                                    );
                                   },
+
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Colors.red,
@@ -460,7 +575,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                             ],
                           ),
                         ),
-                        // show newly picked images
+
                         ..._images.map(
                           (image) => Stack(
                             children: [
@@ -537,10 +652,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 16.0),
 
-                    // Price
                     SizedBox(height: 10),
 
-                    // Listing Features
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -591,6 +704,11 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                     onPressed: () {
                                       featureController.removeFeature(index);
                                     },
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStatePropertyAll(
+                                        Colors.transparent,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -601,7 +719,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 30),
 
-                    // Description
                     Text(
                       "Description",
                       style: TextStyle(
@@ -629,7 +746,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                     ),
                     SizedBox(height: 40),
 
-                    // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -637,7 +753,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                           onPressed: () {
                             if (nameController.text.trim().isEmpty) {
                               AppDialog.showError(
-                                'Please enter the listing name at least hob.',
+                                'Please enter the listing name at least.',
                               );
                               return;
                             }
@@ -678,7 +794,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                 );
                                 return;
                               }
-                              if (_images.isEmpty) {
+                              if (_oldImages.isEmpty && _images.isEmpty) {
                                 AppDialog.showError(
                                   'Please add at least one image',
                                 );

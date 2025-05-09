@@ -11,6 +11,7 @@ import 'package:reside_smart_flutter/Bindings/ChangePasswordBinding.dart';
 import 'package:reside_smart_flutter/Bindings/EditProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/CompleteProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ListingsBinding.dart';
+import 'package:reside_smart_flutter/Bindings/ViewSingleListingBinding.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
 import 'package:reside_smart_flutter/Views/Landing.dart';
@@ -23,6 +24,7 @@ import 'package:reside_smart_flutter/Views/ChangePassword.dart';
 import 'package:reside_smart_flutter/Views/ListingsPage.dart';
 import 'package:reside_smart_flutter/Views/AddListing.dart';
 import 'package:reside_smart_flutter/Views/Completeprofile.dart';
+import 'package:reside_smart_flutter/Views/ViewSingleListing.dart';
 
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Views/UpdateListing.dart';
@@ -44,6 +46,7 @@ class AppRoutes {
   static const String listing = '/listing';
   static const String addListing = '/add-listing';
   static const String updateListing = '/Update-listing';
+  static const String viewSingleListing = '/view-Single-listing';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -95,6 +98,11 @@ class AppRoutes {
       name: updateListing,
       page: () => UpdateListingPage(),
       binding: Updatelistingbinding(),
+    ),
+    GetPage(
+      name: viewSingleListing,
+      page: () => ViewSinglelisting(),
+      binding: Viewsinglelistingbinding(),
     ),
   ];
 }

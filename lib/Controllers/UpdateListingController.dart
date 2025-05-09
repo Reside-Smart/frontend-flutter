@@ -30,6 +30,53 @@ class UpdateListingController extends GetxController {
     }
   }
 
+  Future<void> deleteImage(String url) async {
+    try {
+      isLoading.value = true;
+
+      await _listingservice.deleteImage(url, listingId!);
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> cancleOption(int id) async {
+    try {
+      isLoading.value = true;
+
+      await _listingservice.cancleRentaloption(id);
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> editOption(
+    int id,
+    double price,
+    String unit,
+    int duration,
+  ) async {
+    try {
+      isLoading.value = true;
+      await ListingService().editRentalOption(id, price, unit, duration);
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> addOption(double price, String unit, int duration) async {
+    try {
+      isLoading.value = true;
+      await ListingService().addRentalOption(listingId!, price, unit, duration);
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   final RxBool isLoading = false.obs;
   var fieldErrors = <String, String>{}.obs;
 
@@ -54,17 +101,16 @@ class UpdateListingController extends GetxController {
         'category_id': category,
         'address': address,
         'images[]':
-            // images != null && images.isNotEmpty
-            //     ? await Future.wait(
-            //       images.map((image) async {
-            //         return await dio.MultipartFile.fromFile(
-            //           image.path,
-            //           filename: image.name,
-            //         );
-            //       }),
-            //     )
-            //     :
-            [],
+            images != null && images.isNotEmpty
+                ? await Future.wait(
+                  images.map((image) async {
+                    return await dio.MultipartFile.fromFile(
+                      image.path,
+                      filename: image.name,
+                    );
+                  }),
+                )
+                : [],
         'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
@@ -104,10 +150,7 @@ class UpdateListingController extends GetxController {
         listingId: listing!.id!,
         formData: formData,
       );
-
-      AppDialog.showSuccess('Listing Updated As Draft successfully');
     } catch (e) {
-      // throw e;
       _handleError(e);
     } finally {
       isLoading.value = false;
@@ -128,22 +171,23 @@ class UpdateListingController extends GetxController {
     try {
       isLoading.value = true;
       fieldErrors.clear();
+
       dio.FormData formData = dio.FormData.fromMap({
         'name': name,
         'type': type,
         'category_id': category,
         'address': address,
-        'images[]': // images != null && images.isNotEmpty
-            //     ? await Future.wait(
-            //       images.map((image) async {
-            //         return await dio.MultipartFile.fromFile(
-            //           image.path,
-            //           filename: image.name,
-            //         );
-            //       }),
-            //     )
-            //     :
-            [],
+        'images[]':
+            images != null && images.isNotEmpty
+                ? await Future.wait(
+                  images.map((image) async {
+                    return await dio.MultipartFile.fromFile(
+                      image.path,
+                      filename: image.name,
+                    );
+                  }),
+                )
+                : [],
         'price': (type != null && type == "sell") ? price : null,
         'features': dio.MultipartFile.fromString(
           jsonEncode(
@@ -183,10 +227,7 @@ class UpdateListingController extends GetxController {
         listingId: listing!.id!,
         formData: formData,
       );
-
-      AppDialog.showSuccess('Listing Updated As Published successfully');
     } catch (e) {
-      // throw e;
       _handleError(e);
     } finally {
       isLoading.value = false;
