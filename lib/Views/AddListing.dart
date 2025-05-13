@@ -291,6 +291,11 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                       onPressed: () {
                                         rentPriceController.removeOption(index);
                                       },
+                                      style: ButtonStyle(
+                                        backgroundColor: WidgetStatePropertyAll(
+                                          Colors.transparent,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -484,10 +489,16 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                     ),
                                   ),
                                   IconButton(
+                                    color: Colors.green,
                                     icon: Icon(Icons.delete, color: Colors.red),
                                     onPressed: () {
                                       featureController.removeFeature(index);
                                     },
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStatePropertyAll(
+                                        Colors.transparent,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),

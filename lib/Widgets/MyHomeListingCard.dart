@@ -74,10 +74,13 @@ class _MyHomeListingCardState extends State<MyHomeListingCard> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  MyNetworkImage(
-                    url: "storage/${widget.listingModel.images![0]}",
-                    fit: BoxFit.cover,
-                  ),
+                  widget.listingModel.images != null &&
+                          widget.listingModel.images!.isNotEmpty
+                      ? MyNetworkImage(
+                        url: "storage/${widget.listingModel.images![0]}",
+                        fit: BoxFit.cover,
+                      )
+                      : Container(),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(

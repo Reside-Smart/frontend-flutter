@@ -29,8 +29,8 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text("Profile", style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 0, // Remove shadow
-        iconTheme: IconThemeData(color: Colors.black), // Ensure icons are black
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
         automaticallyImplyLeading: false,
 
         actions: [
@@ -38,23 +38,16 @@ class _ProfilePageState extends State<ProfilePage> {
             builder:
                 (context) => GestureDetector(
                   onTap: () {
-                    Scaffold.of(
-                      context,
-                    ).openDrawer(); // Open drawer when tapped
+                    Scaffold.of(context).openDrawer();
                   },
                   child: Container(
-                    margin: EdgeInsets.only(
-                      right: 15,
-                    ), // Add spacing from right
-                    padding: EdgeInsets.all(10), // Increase tap area
+                    margin: EdgeInsets.only(right: 15),
+                    padding: EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300, // Gray background
-                      shape: BoxShape.circle, // Circular background
+                      color: Colors.grey.shade300,
+                      shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.settings,
-                      color: Colors.black,
-                    ), // Black icon
+                    child: Icon(Icons.settings, color: Colors.black),
                   ),
                 ),
           ),
@@ -74,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Stack(
                   children: [
                     Container(
-                      width: 90, // Slightly larger avatar
+                      width: 90,
                       height: 90,
                       child:
                           authService.globalUser?.image != null

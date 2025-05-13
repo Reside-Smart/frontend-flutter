@@ -36,143 +36,135 @@ class _SearchPageState extends State<SearchPage> {
     final tt = Theme.of(context).textTheme;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: MyMainAppBar(title: 'Search'),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ───── Search Field ─────
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                onChanged: (v) => searchController.query.value = v,
-                onSubmitted: (_) => searchController.search(),
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ───── Search Field ─────
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            onChanged: (v) => searchController.query.value = v,
+            onSubmitted: (_) => searchController.search(),
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
+          ),
+        ),
 
-            // ───── Category Chips ─────
-            Obx(() {
-              if (searchController.isCatLoading.value) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    ChoiceChip(
-                      label: const Text('All'),
-                      selected: searchController.selectedCategory.value == null,
+        // ───── Category Chips ─────
+        Obx(() {
+          if (searchController.isCatLoading.value) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('All'),
+                  selected: searchController.selectedCategory.value == null,
+                  onSelected: (_) {
+                    searchController.selectedCategory.value = null;
+                    searchController.search();
+                  },
+                  side: BorderSide.none,
+                ),
+                const SizedBox(width: 8),
+                ...searchController.categories.map((cat) {
+                  final sel = searchController.selectedCategory.value == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(cat.name),
+                      selected: sel,
                       onSelected: (_) {
-                        searchController.selectedCategory.value = null;
+                        searchController.selectedCategory.value =
+                            sel ? null : cat;
                         searchController.search();
                       },
                       side: BorderSide.none,
                     ),
-                    const SizedBox(width: 8),
-                    ...searchController.categories.map((cat) {
-                      final sel =
-                          searchController.selectedCategory.value == cat;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(cat.name),
-                          selected: sel,
-                          onSelected: (_) {
-                            searchController.selectedCategory.value =
-                                sel ? null : cat;
-                            searchController.search();
-                          },
-                          side: BorderSide.none,
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              );
-            }),
+                  );
+                }).toList(),
+              ],
+            ),
+          );
+        }),
 
-            const SizedBox(height: 16),
+        const SizedBox(height: 16),
 
-            // ───── Results with Pull-to-Refresh ─────
-            Expanded(
-              child: Obx(() {
-                if (searchController.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (searchController.results.isEmpty) {
-                  return const Center(child: Text('No results.'));
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary line
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: RichText(
-                        text: TextSpan(
-                          style: tt.bodyLarge,
-                          children: [
-                            const TextSpan(text: 'Found '),
-                            TextSpan(
-                              text: '${searchController.results.length}',
-                              style: tt.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const TextSpan(text: ' estates'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Grid wrapped in RefreshIndicator
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset),
-                        child: RefreshIndicator(
-                          onRefresh: _onRefresh,
-                          // Always allow overscroll so the indicator shows even if few items
-                          child: GridView.builder(
-                            physics:
-                                const AlwaysScrollableScrollPhysics(), // :contentReference[oaicite:0]{index=0}
-                            itemCount: searchController.results.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 16,
-                                  childAspectRatio: 0.75,
-                                ),
-                            itemBuilder:
-                                (ctx, i) => MyHomeListingCard(
-                                  listingModel: searchController.results[i],
-                                ),
+        // ───── Results with Pull-to-Refresh ─────
+        Expanded(
+          child: Obx(() {
+            if (searchController.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (searchController.results.isEmpty) {
+              return const Center(child: Text('No results.'));
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary line
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: RichText(
+                    text: TextSpan(
+                      style: tt.bodyLarge,
+                      children: [
+                        const TextSpan(text: 'Found '),
+                        TextSpan(
+                          text: '${searchController.results.length}',
+                          style: tt.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
+                        const TextSpan(text: ' estates'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Grid wrapped in RefreshIndicator
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset),
+                    child: RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      // Always allow overscroll so the indicator shows even if few items
+                      child: GridView.builder(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(), // :contentReference[oaicite:0]{index=0}
+                        itemCount: searchController.results.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.75,
+                            ),
+                        itemBuilder:
+                            (ctx, i) => MyHomeListingCard(
+                              listingModel: searchController.results[i],
+                            ),
                       ),
                     ),
-                  ],
-                );
-              }),
-            ),
-          ],
+                  ),
+                ),
+              ],
+            );
+          }),
         ),
-      ),
+      ],
     );
   }
 }

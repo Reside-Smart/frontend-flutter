@@ -58,19 +58,20 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.notifications),
-            title: Text("Notifications"),
-            onTap: () {
-              // Handle action
-            },
-          ),
-          ListTile(
             leading: Icon(Icons.house_rounded),
             title: Text("Listing"),
             onTap: () {
               Get.toNamed('listing');
             },
           ),
+          ListTile(
+            leading: Icon(Icons.discount),
+            title: Text("Discount"),
+            onTap: () {
+              Get.toNamed('discount');
+            },
+          ),
+
           ListTile(
             leading: Icon(Icons.assignment),
             title: Text("Transaction"),
@@ -79,8 +80,8 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text("Profile"),
+            leading: Icon(Icons.notifications),
+            title: Text("Notifications"),
             onTap: () {
               // Handle action
             },

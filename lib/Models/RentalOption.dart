@@ -4,6 +4,7 @@ class RentalOption {
   final int duration;
   final String unit;
   final double price;
+  final bool is_cancelled;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class RentalOption {
     required this.duration,
     required this.unit,
     required this.price,
+    required this.is_cancelled,
     this.createdAt,
     this.updatedAt,
   });
@@ -24,6 +26,7 @@ class RentalOption {
       duration: json['duration'] as int,
       unit: json['unit'] as String,
       price: double.tryParse(json['price'].toString()) ?? 0.0,
+      is_cancelled: (json['is_cancelled'] == 1 || json['is_cancelled'] == true),
       createdAt:
           json['created_at'] != null
               ? DateTime.parse(json['created_at'] as String)
@@ -42,6 +45,7 @@ class RentalOption {
       'duration': duration,
       'unit': unit,
       'price': price,
+      'is_cancelled': is_cancelled,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

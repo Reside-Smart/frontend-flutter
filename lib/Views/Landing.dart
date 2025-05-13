@@ -15,15 +15,16 @@ class _LandingPageState extends State<LandingPage> {
 
   final List<Map<String, String>> pages = [
     {
-      "image": "images/landing-1.png",
+      "image": "images/ResideSmart-landing-1.png",
       "text": "Discover Your Dream Home with Reside Smart",
     },
     {
-      "image": "images/landing-2.png",
-      "text": "Track Market Trends & Property Alerts",
+      "image": "images/residesmart-landing-2.png",
+      "text":
+          "Get Instant Notifications on New Listings, Property Updates and More",
     },
     {
-      "image": "images/landing-3.png",
+      "image": "images/ResideSmart-landing-3.png",
       "text": "Close Deals Seamlessly with Reside Smart",
     },
   ];

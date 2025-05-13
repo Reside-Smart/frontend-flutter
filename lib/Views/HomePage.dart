@@ -1,11 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Controllers/HomeController.dart';
 import 'package:reside_smart_flutter/Models/ListingDiscountModel.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
+import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyHomeListingCard.dart';
+import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -95,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     children: [
                       TextSpan(
-                        text: 'Jonathan',
+                        text: authService!.globalUser!.name,
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           inherit: false,
@@ -212,50 +215,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _LocationDropdown extends StatelessWidget {
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-
-  const _LocationDropdown({required this.colorScheme, required this.textTheme});
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: 'Jakarta, Indonesia',
-        items: const [
-          DropdownMenuItem(
-            value: 'Jakarta, Indonesia',
-            child: Text('Jakarta, Indonesia'),
-          ),
-          DropdownMenuItem(
-            value: 'Bali, Indonesia',
-            child: Text('Bali, Indonesia'),
-          ),
-        ],
-        onChanged: (_) {},
-        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
-        icon: Icon(Icons.keyboard_arrow_down, color: colorScheme.onSurface),
-        borderRadius: BorderRadius.circular(12),
-        dropdownColor: colorScheme.surface,
-      ),
-    );
-  }
-}
-
-class Estate {
-  final String title, location;
-  final int price;
-  final double? rating;
-
-  Estate({
-    required this.title,
-    required this.price,
-    this.location = '',
-    this.rating,
-  });
-}
-
 class DiscountCard extends StatelessWidget {
   final ListingDiscountModel discount;
   final ColorScheme colorScheme;
@@ -277,13 +236,14 @@ class DiscountCard extends StatelessWidget {
         height: 220,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('images/landing-1.png'),
+            image: CachedNetworkImageProvider(
+              '${Api.baseURL}/storage/${discount.listing!.images![0]}',
+            ),
             fit: BoxFit.cover,
           ),
         ),
         child: Stack(
           children: [
-            // Dark overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -296,7 +256,7 @@ class DiscountCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Discount badge
+
             Positioned(
               top: 16,
               right: 16,
@@ -318,7 +278,7 @@ class DiscountCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Card content
+
             Positioned(
               left: 16,
               bottom: 16,
@@ -364,7 +324,7 @@ class DiscountCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${discount.getDiscountPrice().toStringAsFixed(2)}',
+                              getPriceToShow(),
                               style: textTheme.bodyLarge?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -403,6 +363,75 @@ class DiscountCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  String getPriceToShow() {
+    final listing = discount.listing!;
+    print('Listing Type: ${listing.type}');
+    print('Discount rentalOptionId: ${discount.rentalOptionId}');
+    print(
+      'Rental Options: ${listing.rentalOptions?.map((e) => e.id).toList()}',
+    );
+
+    if (listing.type == 'sell') {
+      return discount.getDiscountPrice().toStringAsFixed(2);
+    }
+
+    final selectedOption = listing.rentalOptions?.firstWhereOrNull(
+      (option) => option.id == discount.rentalOptionId,
+    );
+
+    if (selectedOption != null) {
+      final discountedPrice =
+          selectedOption.price * (1 - discount.percentage / 100);
+      return discountedPrice.toStringAsFixed(2);
+    } else {
+      return listing.price!.toStringAsFixed(2);
+    }
+  }
+}
+
+class _LocationDropdown extends StatelessWidget {
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  const _LocationDropdown({required this.colorScheme, required this.textTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: 'Jakarta, Indonesia',
+        items: const [
+          DropdownMenuItem(
+            value: 'Jakarta, Indonesia',
+            child: Text('Jakarta, Indonesia'),
+          ),
+          DropdownMenuItem(
+            value: 'Bali, Indonesia',
+            child: Text('Bali, Indonesia'),
+          ),
+        ],
+        onChanged: (_) {},
+        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+        icon: Icon(Icons.keyboard_arrow_down, color: colorScheme.onSurface),
+        borderRadius: BorderRadius.circular(12),
+        dropdownColor: colorScheme.surface,
+      ),
+    );
+  }
+}
+
+class Estate {
+  final String title, location;
+  final int price;
+  final double? rating;
+
+  Estate({
+    required this.title,
+    required this.price,
+    this.location = '',
+    this.rating,
+  });
 }
 
 class Location {

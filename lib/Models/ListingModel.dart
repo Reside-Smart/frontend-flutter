@@ -1,4 +1,5 @@
 import 'package:reside_smart_flutter/Models/RentalOption.dart';
+import 'package:reside_smart_flutter/Models/UserModel.dart';
 
 class ListingModel {
   final int? id;
@@ -15,6 +16,7 @@ class ListingModel {
   double? averageReviews;
   Map<String, dynamic>? location;
   final int? userId;
+  final UserModel? user;
   List<RentalOption>? rentalOptions;
   bool isFavorite;
 
@@ -35,6 +37,7 @@ class ListingModel {
     this.userId,
     this.rentalOptions,
     this.isFavorite = false,
+    this.user,
   });
 
   factory ListingModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +65,7 @@ class ListingModel {
                   .toList()
               : [],
       isFavorite: json['is_favorite'] == null ? false : (json['is_favorite']),
+      user: json['user'] == null ? null : UserModel.fromJson(json['user']),
     );
   }
 
@@ -93,7 +97,8 @@ class ListingModel {
   double getPrice() {
     if (price == null) return 0;
     if (type == "sell") return price!;
-    if (type == "rent") return rentalOptions![0].price;
+    if (type == "rent")
+      return rentalOptions!.isEmpty ? 0 : rentalOptions![0].price;
     return 0;
   }
 }
