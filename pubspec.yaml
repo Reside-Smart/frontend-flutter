@@ -41,6 +41,7 @@ dependencies:
   intl_phone_field: ^3.2.0
   image_picker: any
   cached_network_image: any
+  dropdown_search: ^5.0.6
 
 dev_dependencies:
   flutter_test:

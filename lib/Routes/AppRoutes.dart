@@ -1,4 +1,6 @@
+import 'package:reside_smart_flutter/Bindings/AddDiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/AddListingBinding.dart';
+import 'package:reside_smart_flutter/Bindings/DiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/FavoritesBinding.dart';
 import 'package:reside_smart_flutter/Bindings/HomeBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SearchBinding.dart';
@@ -12,6 +14,8 @@ import 'package:reside_smart_flutter/Bindings/EditProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/CompleteProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ListingsBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ViewSingleListingBinding.dart';
+import 'package:reside_smart_flutter/Views/AddListingDiscount.dart';
+import 'package:reside_smart_flutter/Views/Discount.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
 import 'package:reside_smart_flutter/Views/Landing.dart';
@@ -47,6 +51,8 @@ class AppRoutes {
   static const String addListing = '/add-listing';
   static const String updateListing = '/Update-listing';
   static const String viewSingleListing = '/view-Single-listing';
+  static const String discount = '/discount';
+  static const String addDiscount = '/add-discount';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -103,6 +109,16 @@ class AppRoutes {
       name: viewSingleListing,
       page: () => ViewSinglelisting(),
       binding: Viewsinglelistingbinding(),
+    ),
+    GetPage(
+      name: discount,
+      page: () => DiscountPage(),
+      binding: DiscountBinding(),
+    ),
+    GetPage(
+      name: addDiscount,
+      page: () => AddDiscountPage(),
+      binding: AddDiscountBinding(),
     ),
   ];
 }

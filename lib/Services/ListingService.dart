@@ -61,6 +61,21 @@ class ListingService extends GetxService {
     }
   }
 
+  Future<List<dynamic>> getRentalOptions(int listingId) async {
+    try {
+      final response = await Api.dio.get('/listing-rental-options/$listingId');
+
+      if (response.statusCode == 200) {
+        return response.data['data'];
+      } else {
+        throw Exception('Failed to load rental options');
+      }
+    } catch (e) {
+      print(e);
+      throw Exception('Error: $e');
+    }
+  }
+
   Future<void> updateAsDraft({
     required int listingId,
     required dio.FormData formData,
