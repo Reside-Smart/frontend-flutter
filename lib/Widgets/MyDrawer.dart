@@ -87,13 +87,6 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.chat),
-            title: Text("Chatbot"),
-            onTap: () {
-              // Handle action
-            },
-          ),
-          ListTile(
             leading: Icon(Icons.logout),
             title: Text("Logout"),
             onTap: () {
