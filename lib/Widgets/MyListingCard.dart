@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Models/RentalOption.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Services/ListingService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
 class PropertyCard extends StatefulWidget {
@@ -32,6 +34,8 @@ class PropertyCard extends StatefulWidget {
 
 class _PropertyCardState extends State<PropertyCard> {
   final AuthService authService = Get.find<AuthService>();
+  final ListingService listingService = Get.find<ListingService>();
+
   final RxBool isLoading = false.obs;
 
   @override
@@ -89,7 +93,12 @@ class _PropertyCardState extends State<PropertyCard> {
                   right: 8,
                   child: GestureDetector(
                     onTap: () {
-                      print('Delete clicked');
+                      AppDialog.showConfirm(
+                        message: "Are you sure you want to delete this listing",
+                        onConfirm: () async {
+                          await listingService.deleteListing(widget.id);
+                        },
+                      );
                     },
                     child: const CircleAvatar(
                       radius: 16,

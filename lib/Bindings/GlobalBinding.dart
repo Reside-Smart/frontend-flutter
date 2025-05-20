@@ -4,6 +4,8 @@ import 'package:reside_smart_flutter/Services/CategoryService.dart';
 import 'package:reside_smart_flutter/Services/FavoriteService.dart';
 import 'package:reside_smart_flutter/Services/ListingDiscountService.dart';
 import 'package:reside_smart_flutter/Services/ListingService.dart';
+import 'package:reside_smart_flutter/Services/ReviewService.dart';
+import 'package:reside_smart_flutter/Services/TransactionService.dart';
 
 class GlobalBinding extends Bindings {
   @override
@@ -14,5 +16,7 @@ class GlobalBinding extends Bindings {
     Get.put(ListingDiscountService(), permanent: true);
     Get.put(CategoryService(), permanent: true);
     Get.put(FavoriteService(), permanent: true);
+    Get.put(TransactionService(), permanent: true);
+    Get.put(ReviewsService(), permanent: true);
   }
 }

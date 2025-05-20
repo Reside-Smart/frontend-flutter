@@ -23,154 +23,161 @@ class DiscountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 320,
-        height: 220,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: CachedNetworkImageProvider(
-              '${Api.baseURL}/storage/${discount.listing!.images![0]}',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.4),
-                    Colors.black.withOpacity(0.1),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(
+          '/view-Single-listing',
+          arguments: {'id': discount.listingId},
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 320,
+          height: 220,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: CachedNetworkImageProvider(
+                '${Api.baseURL}/storage/${discount.listing!.images![0]}',
               ),
+              fit: BoxFit.cover,
             ),
-
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+          ),
+          child: Stack(
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '-${discount.percentage.toStringAsFixed(0)}%',
-                  style: textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.4),
+                      Colors.black.withOpacity(0.1),
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
                   ),
                 ),
               ),
-            ),
 
-            Positioned(
-              top: 16,
-              left: 16,
-              child: GestureDetector(
-                onTap: () {
-                  AppDialog.showConfirm(
-                    message: "Are you sure you want to delete this discount",
-                    onConfirm: () async {
-                      print(discount.discountId);
-                      await listingDiscountService.deleteDiscount(
-                        discount.discountId,
-                      );
-                    },
-                  );
-                },
-                child: const CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.red,
-                  child: Icon(Icons.delete, size: 16, color: Colors.white),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 16,
-              bottom: 16,
-              right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    discount.name,
-                    style: textTheme.titleLarge?.copyWith(
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '-${discount.percentage.toStringAsFixed(0)}%',
+                    style: textTheme.labelLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: Colors.white70,
+                ),
+              ),
+
+              Positioned(
+                top: 16,
+                left: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    AppDialog.showConfirm(
+                      message: "Are you sure you want to delete this discount",
+                      onConfirm: () async {
+                        print(discount.discountId);
+                        await listingDiscountService.deleteDiscount(
+                          discount.discountId,
+                        );
+                      },
+                    );
+                  },
+                  child: const CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.red,
+                    child: Icon(Icons.delete, size: 16, color: Colors.white),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                bottom: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      discount.name,
+                      style: textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${_formatDate(discount.startDate)} - ${_formatDate(discount.endDate)}',
-                        style: textTheme.bodySmall?.copyWith(
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
                           color: Colors.white70,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (discount.listing != null) ...[
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.attach_money,
-                              size: 18,
-                              color: Colors.greenAccent,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              getPriceToShow(),
-                              style: textTheme.bodyLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.star, size: 18, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              discount.listing!.averageReviews?.toStringAsFixed(
-                                    1,
-                                  ) ??
-                                  '4.5',
-                              style: textTheme.bodyLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_formatDate(discount.startDate)} - ${_formatDate(discount.endDate)}',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (discount.listing != null) ...[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.attach_money,
+                                size: 18,
+                                color: Colors.greenAccent,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                getPriceToShow(),
+                                style: textTheme.bodyLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.star, size: 18, color: Colors.amber),
+                              const SizedBox(width: 4),
+                              Text(
+                                discount.listing!.averageReviews
+                                        ?.toStringAsFixed(1) ??
+                                    '4.5',
+                                style: textTheme.bodyLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -51,7 +51,7 @@ class ListingService extends GetxService {
       final response = await Api.dio.get('/nearby-estates');
 
       if (response.statusCode == 200) {
-        List data = response.data['listings'];
+        List data = response.data;
         return data.map((e) => ListingModel.fromJson(e)).toList();
       } else {
         throw Exception('Failed to fetch listings');
@@ -256,6 +256,23 @@ class ListingService extends GetxService {
       }
     } catch (e) {
       print('Error editing rental option: $e');
+    }
+  }
+
+  Future<void> deleteListing(int listingId) async {
+    try {
+      final response = await Api.dio.delete('/delete-listing/$listingId');
+
+      print(response);
+      AppDialog.showSuccess(response.data['message']);
+
+      if (response.statusCode == 200) {
+        print('Listing deleted successfully');
+      } else {
+        print('Failed to delete listing from server');
+      }
+    } catch (e) {
+      print('Error deleting discount: $e');
     }
   }
 }

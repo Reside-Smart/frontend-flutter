@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Controllers/CategoryController.dart';
 import 'package:reside_smart_flutter/Controllers/ViewSingleListingController.dart';
+import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Views/ListingAllImages.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ViewSinglelisting extends StatefulWidget {
   const ViewSinglelisting({super.key});
@@ -16,12 +19,51 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
   final ViewSingleListingController viewSingleListingController =
       Get.find<ViewSingleListingController>();
   final categotyController = Get.put(CategoryController());
+  final AuthService authService = Get.find<AuthService>();
+
+  int? selectedRentalOption;
 
   @override
   void initState() {
     super.initState();
     final int id = Get.arguments['id'];
     viewSingleListingController.getSingleListing(id);
+  }
+
+  // Future<void> openWhatsApp(String phone) async {
+  //   try {
+  //     final whatsappUrl = Uri.parse(
+  //       'https://api.whatsapp.com/send?phone=$phone&text=Hello from Reside Smart',
+  //     );
+  //     print(whatsappUrl);
+  //     if (await canLaunchUrl(whatsappUrl)) {
+  //       // await launchUrl(whatsappUrl);
+  //       // await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+  //       await launchUrl(whatsappUrl, mode: LaunchMode.platformDefault);
+  //     } else {
+  //       Get.snackbar(
+  //         'Error',
+  //         'WhatsApp is not available on this device',
+  //         snackPosition: SnackPosition.BOTTOM,
+  //       );
+  //     }
+  //   } catch (e) {
+  //     AppDialog.showError(e.toString());
+  //     print(e);
+  //   }
+  // }
+
+  Future<void> openWhatsApp(String phone) async {
+    try {
+      final whatsappUrl = Uri.parse(
+        'https://api.whatsapp.com/send?phone=$phone&text=Hello from Reside Smart',
+      );
+      print(whatsappUrl);
+      await launchUrl(whatsappUrl);
+    } catch (e) {
+      AppDialog.showError(e.toString());
+      print(e);
+    }
   }
 
   @override
@@ -304,9 +346,29 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                                     listing.rentalOptions!
                                         .where((option) => option.is_cancelled)
                                         .map((option) {
-                                          return Text(
-                                            "${option.duration} ${option.unit} \$${option.price}",
-                                            style: TextStyle(fontSize: 16),
+                                          return ChoiceChip(
+                                            label: Text(
+                                              '${option.duration} ${option.unit} ${option.price}',
+                                            ),
+                                            selected:
+                                                selectedRentalOption ==
+                                                option.id,
+                                            onSelected: (selected) {
+                                              setState(
+                                                () =>
+                                                    selectedRentalOption =
+                                                        option.id,
+                                              );
+                                            },
+                                            selectedColor:
+                                                Theme.of(context).primaryColor,
+                                            labelStyle: TextStyle(
+                                              color:
+                                                  selectedRentalOption ==
+                                                          option.id
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                            ),
                                           );
                                         })
                                         .toList()
@@ -315,7 +377,6 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                                         .map((entry) {
                                           int index = entry.key;
                                           Widget text = entry.value;
-
                                           return Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -436,27 +497,34 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                                               )
                                           : Icon(Icons.person, size: 90),
                                 ),
-                                Text(
-                                  listing.user!.name,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[900],
-                                  ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      listing.user!.name,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey[900],
+                                      ),
+                                    ),
+
+                                    Text(
+                                      'Real Estate owner',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[700],
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 IconButton(
                                   icon: Icon(Icons.message),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    openWhatsApp(listing.user!.phoneNumber);
+                                  },
                                 ),
                               ],
-                            ),
-                            Text(
-                              'Real Estate owner',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[700],
-                                fontStyle: FontStyle.italic,
-                              ),
                             ),
                           ],
                         ),
@@ -478,10 +546,10 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                          image: AssetImage('assets/map_placeholder.png'),
-                          fit: BoxFit.cover,
-                        ),
+                        // image: DecorationImage(
+                        //   image: AssetImage('assets/map_placeholder.png'),
+                        //   fit: BoxFit.cover,
+                        // ),
                       ),
                       child: Center(
                         child: Container(
@@ -519,33 +587,7 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                       'St. Clokilo Timur, Koc. Pancoian, Jakarta\nSclatan, Indonesia 18770',
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    SizedBox(height: 24),
-                    Text(
-                      'Availability',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Available from 20-3-2025',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
+
                     SizedBox(height: 32),
                     Text(
                       'Reviews',
@@ -617,7 +659,10 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              print("Icon clicked!");
+                              Get.toNamed(
+                                '/view-review',
+                                arguments: {'listingId': listing.id},
+                              );
                             },
                             child: Container(
                               padding: EdgeInsets.all(8),
@@ -637,28 +682,54 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                     ),
                     SizedBox(height: 32),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    authService.globalUser!.id != listing.userId
+                        ? SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              if (listing.type == 'rent') {
+                                if (selectedRentalOption == null) {
+                                  AppDialog.showError(
+                                    'Please choose a rental option before booking.',
+                                  );
+                                  return;
+                                }
+
+                                Get.offAndToNamed(
+                                  '/purchase-listing',
+                                  arguments: {
+                                    'listing': listing,
+                                    'selectedRentalOption':
+                                        selectedRentalOption,
+                                  },
+                                );
+                              } else {
+                                Get.offAndToNamed(
+                                  '/purchase-listing',
+                                  arguments: {'listing': listing},
+                                );
+                              }
+                            },
+                            child: Text(
+                              listing.type == 'rent' ? 'Book Now' : 'Buy Now',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          elevation: 0,
-                        ),
-                        onPressed: () {},
-                        child: Text(
-                          'Buy Now',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
+                        )
+                        : const SizedBox.shrink(),
+
                     SizedBox(height: 32),
                   ],
                 ),
