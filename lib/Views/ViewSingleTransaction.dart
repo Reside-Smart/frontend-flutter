@@ -225,7 +225,6 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
                                   AppDialog.showConfirm(
                                     message:
                                         "Are you sure you want to change payment status to paid",
-
                                     onConfirm: () async {
                                       await transactionService.markAsPaid(
                                         transactionId: transaction.id!,

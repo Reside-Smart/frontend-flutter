@@ -36,16 +36,29 @@ class _SearchPageState extends State<SearchPage> {
       children: [
         Padding(
           padding: const EdgeInsets.all(20),
-          child: TextField(
-            onChanged: (v) => searchController.query.value = v,
-            onSubmitted: (_) => searchController.search(),
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (v) => searchController.query.value = v,
+                  onSubmitted: (_) => searchController.search(),
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.tune),
+                onPressed: () {
+                  Get.toNamed('/filter');
+                },
+              ),
+            ],
           ),
         ),
 

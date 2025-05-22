@@ -30,29 +30,6 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
     viewSingleListingController.getSingleListing(id);
   }
 
-  // Future<void> openWhatsApp(String phone) async {
-  //   try {
-  //     final whatsappUrl = Uri.parse(
-  //       'https://api.whatsapp.com/send?phone=$phone&text=Hello from Reside Smart',
-  //     );
-  //     print(whatsappUrl);
-  //     if (await canLaunchUrl(whatsappUrl)) {
-  //       // await launchUrl(whatsappUrl);
-  //       // await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-  //       await launchUrl(whatsappUrl, mode: LaunchMode.platformDefault);
-  //     } else {
-  //       Get.snackbar(
-  //         'Error',
-  //         'WhatsApp is not available on this device',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //       );
-  //     }
-  //   } catch (e) {
-  //     AppDialog.showError(e.toString());
-  //     print(e);
-  //   }
-  // }
-
   Future<void> openWhatsApp(String phone) async {
     try {
       final whatsappUrl = Uri.parse(

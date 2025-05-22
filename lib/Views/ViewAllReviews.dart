@@ -30,6 +30,25 @@ class _ViewAllReviewsState extends State<ViewAllReviews> {
     loadData();
   }
 
+  String formatReviewDate(String? dateStr) {
+    if (dateStr == null) return '';
+
+    final reviewDate = DateTime.tryParse(dateStr);
+    if (reviewDate == null) return '';
+
+    final now = DateTime.now();
+    final difference = now.difference(reviewDate).inDays;
+
+    if (difference == 0 && now.day == reviewDate.day) {
+      return 'Today';
+    } else if (difference <= 1 &&
+        now.subtract(const Duration(days: 1)).day == reviewDate.day) {
+      return 'Yesterday';
+    } else {
+      return '${reviewDate.year}-${reviewDate.month.toString().padLeft(2, '0')}-${reviewDate.day.toString().padLeft(2, '0')}';
+    }
+  }
+
   Future<void> loadData() async {
     setState(() => isLoading = true);
 
@@ -147,17 +166,36 @@ class _ViewAllReviewsState extends State<ViewAllReviews> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              userReviews[0].user?.id ==
-                                                      authService.globalUser?.id
-                                                  ? 'You'
-                                                  : userReviews[0].user?.name ??
-                                                      'Unknown',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey[800],
-                                              ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  userReviews[0].user?.id ==
+                                                          authService
+                                                              .globalUser
+                                                              ?.id
+                                                      ? 'You'
+                                                      : userReviews[0]
+                                                              .user
+                                                              ?.name ??
+                                                          'Unknown',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey[800],
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  formatReviewDate(
+                                                    userReviews[0].createdAt,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+
                                             Row(
                                               children: [
                                                 ...buildStarIcons(userRating),

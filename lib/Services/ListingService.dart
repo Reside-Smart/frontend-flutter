@@ -160,6 +160,44 @@ class ListingService extends GetxService {
     throw Exception('Failed to search listings');
   }
 
+  Future<List<ListingModel>> filterListings({
+    required String type,
+    required double minPrice,
+    required double maxPrice,
+    List<int>? categoryIds,
+    String? search,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'type': type.toLowerCase(),
+        'min_price': minPrice,
+        'max_price': maxPrice,
+      };
+
+      if (categoryIds != null && categoryIds.isNotEmpty) {
+        params['category_ids'] = categoryIds.join(',');
+      }
+
+      if (search != null && search.isNotEmpty) {
+        params['search'] = search;
+      }
+
+      final response = await Api.dio.get(
+        '/listings/filter',
+        queryParameters: params,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['listings'] as List;
+        return data.map((e) => ListingModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Failed to fetch filtered listings');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<ListingModel>> getFavorites() async {
     final response = await Api.dio.get('/favorites');
     if (response.statusCode == 200) {

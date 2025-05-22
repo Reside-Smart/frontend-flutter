@@ -2,6 +2,7 @@ import 'package:reside_smart_flutter/Bindings/AddDiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/AddListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/DiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/FavoritesBinding.dart';
+import 'package:reside_smart_flutter/Bindings/FilterBinding.dart';
 import 'package:reside_smart_flutter/Bindings/HomeBinding.dart';
 import 'package:reside_smart_flutter/Bindings/PurchaseListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SearchBinding.dart';
@@ -23,6 +24,7 @@ import 'package:reside_smart_flutter/Views/Discount.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
 import 'package:reside_smart_flutter/Views/Landing.dart';
+import 'package:reside_smart_flutter/Views/ProfilePage.dart';
 import 'package:reside_smart_flutter/Views/PurchaseListing.dart';
 import 'package:reside_smart_flutter/Views/SignIn.dart';
 import 'package:reside_smart_flutter/Views/SignUp.dart';
@@ -41,6 +43,7 @@ import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Views/UpdateListing.dart';
 import 'package:reside_smart_flutter/Views/VerifyEmail.dart';
 import 'package:reside_smart_flutter/Views/ViewSingleTransaction.dart';
+import 'package:reside_smart_flutter/Views/filterPage.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -66,6 +69,7 @@ class AppRoutes {
   static const String viewSingleTransaction = '/view-single-transactions';
   static const String addReview = '/add-review';
   static const String viewReviews = '/view-review';
+  static const String filter = '/filter';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -150,5 +154,6 @@ class AppRoutes {
     ),
     GetPage(name: addReview, page: () => AddReviews()),
     GetPage(name: viewReviews, page: () => ViewAllReviews()),
+    GetPage(name: filter, page: () => FilterPage(), binding: FilterBinding()),
   ];
 }

@@ -54,28 +54,26 @@ class ReviewsService {
     }
   }
 
-  Future<List<String>> fetchUserReviews(int listingId) async {
+  Future<List<Map<String, dynamic>>> fetchUserReviewsWithIds(
+    int listingId,
+  ) async {
     try {
       final response = await Api.dio.get('/user-reviews/$listingId');
 
       List<dynamic> data = response.data['data'];
-      return data.map<String>((review) => review['text'].toString()).toList();
+      return data.map<Map<String, dynamic>>((review) {
+        return {
+          'id': review['id'],
+          'text': review['text'],
+          'created_at': review['created_at'],
+        };
+      }).toList();
     } catch (e) {
       print('Error fetching user reviews: $e');
       return [];
     }
   }
 
-  // Future<List<String>> fetchAllReviews(int listingId) async {
-  //   final response = await Api.dio.get('/get-reviews/$listingId');
-
-  //   if (response.statusCode == 200 && response.data['status'] == true) {
-  //     List reviews = response.data['reviews'];
-  //     return reviews.map<String>((r) => r['text'] as String).toList();
-  //   } else {
-  //     throw Exception('Failed to fetch reviews');
-  //   }
-  // }
   Future<List<ReviewModel>> fetchAllReviews(int listingId) async {
     final response = await Api.dio.get('/get-reviews/$listingId');
 
@@ -101,6 +99,42 @@ class ReviewsService {
     } catch (e) {
       print('Error fetching ratings: $e');
       return [];
+    }
+  }
+
+  Future<void> editReview({
+    required int reviewId,
+    required String newText,
+  }) async {
+    try {
+      final response = await Api.dio.put(
+        '/edit-reviews/$reviewId',
+        data: {'text': newText},
+      );
+
+      print('response: ${response.data}');
+      AppDialog.showSuccess(response.data['message']);
+    } on dio.DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? 'Something went wrong';
+      AppDialog.showError(errorMessage);
+    } catch (e) {
+      AppDialog.showError('Unexpected error: $e');
+    }
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    try {
+      final response = await Api.dio.delete('/delete-reviews/$reviewId');
+
+      print('response: ${response.data}');
+      AppDialog.showSuccess(response.data['message']);
+    } on dio.DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? 'Something went wrong';
+      AppDialog.showError(errorMessage);
+    } catch (e) {
+      AppDialog.showError('Unexpected error: $e');
     }
   }
 }

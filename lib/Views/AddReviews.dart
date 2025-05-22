@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Services/ReviewService.dart';
-import 'package:reside_smart_flutter/Services/TransactionService.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
 
 class AddReviews extends StatefulWidget {
@@ -16,7 +15,7 @@ class _AddReviewsState extends State<AddReviews> {
 
   double rating = 0.0;
   bool hasRated = false;
-  List<String> userReviewTexts = [];
+  List<Map<String, dynamic>> userReviews = [];
 
   final TextEditingController reviewController = TextEditingController();
   final int listingId = Get.arguments['listingId'];
@@ -39,8 +38,20 @@ class _AddReviewsState extends State<AddReviews> {
   }
 
   Future<void> fetchUserReviews() async {
-    userReviewTexts = await reviewsService.fetchUserReviews(listingId);
-    setState(() {});
+    final result = await reviewsService.fetchUserReviewsWithIds(listingId);
+    setState(() {
+      userReviews = result;
+    });
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    await reviewsService.deleteReview(reviewId);
+    fetchUserReviews();
+  }
+
+  Future<void> editReview(int reviewId, String newText) async {
+    await reviewsService.editReview(reviewId: reviewId, newText: newText);
+    fetchUserReviews();
   }
 
   @override
@@ -56,11 +67,11 @@ class _AddReviewsState extends State<AddReviews> {
       appBar: MyMainAppBar(title: 'Add Review'),
       body: RefreshIndicator(
         onRefresh: () async {
-          fetchUserRating();
-          fetchUserReviews();
+          await fetchUserRating();
+          await fetchUserReviews();
         },
-
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +115,6 @@ class _AddReviewsState extends State<AddReviews> {
               TextField(
                 controller: reviewController,
                 maxLines: 5,
-
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -116,15 +126,17 @@ class _AddReviewsState extends State<AddReviews> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    reviewsService.addRating(
+                  onPressed: () async {
+                    await reviewsService.addRating(
                       rating: rating,
                       listingId: listingId,
                     );
-                    reviewsService.addReview(
+                    await reviewsService.addReview(
                       text: reviewController.text,
                       listingId: listingId,
                     );
+                    reviewController.clear();
+                    fetchUserReviews();
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -136,7 +148,7 @@ class _AddReviewsState extends State<AddReviews> {
                 ),
               ),
               const SizedBox(height: 24),
-              if (userReviewTexts.isNotEmpty) ...[
+              if (userReviews.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 const Text(
                   'Your Previous Reviews',
@@ -149,9 +161,45 @@ class _AddReviewsState extends State<AddReviews> {
                 const SizedBox(height: 16),
                 Column(
                   children:
-                      userReviewTexts
-                          .map(
-                            (text) => Card(
+                      userReviews.map((review) {
+                        print(review);
+                        final int reviewId = review['id'];
+                        final String reviewText = review['text'];
+                        final String createdAt = review['created_at'];
+                        final textController = TextEditingController(
+                          text: reviewText,
+                        );
+                        bool isEditing = false;
+
+                        final DateTime reviewDate = DateTime.parse(createdAt);
+                        final DateTime now = DateTime.now();
+                        final DateTime today = DateTime(
+                          now.year,
+                          now.month,
+                          now.day,
+                        );
+                        final DateTime yesterday = today.subtract(
+                          const Duration(days: 1),
+                        );
+                        final DateTime reviewDay = DateTime(
+                          reviewDate.year,
+                          reviewDate.month,
+                          reviewDate.day,
+                        );
+
+                        String displayDate;
+                        if (reviewDay == today) {
+                          displayDate = 'Today';
+                        } else if (reviewDay == yesterday) {
+                          displayDate = 'Yesterday';
+                        } else {
+                          displayDate =
+                              '${reviewDate.year}-${reviewDate.month.toString().padLeft(2, '0')}-${reviewDate.day.toString().padLeft(2, '0')}';
+                        }
+
+                        return StatefulBuilder(
+                          builder: (context, localSetState) {
+                            return Card(
                               elevation: 1,
                               margin: const EdgeInsets.only(bottom: 12),
                               shape: RoundedRectangleBorder(
@@ -173,29 +221,139 @@ class _AddReviewsState extends State<AddReviews> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'You',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey[800],
-                                            ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                'You',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey[800],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                displayDate,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color.fromARGB(
+                                                    255,
+                                                    124,
+                                                    123,
+                                                    123,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           const SizedBox(height: 8),
-                                          Text(
-                                            text,
-                                            style: const TextStyle(
-                                              color: Colors.black87,
-                                            ),
-                                          ),
+                                          isEditing
+                                              ? TextField(
+                                                controller: textController,
+                                                maxLines: 3,
+                                                decoration: InputDecoration(
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                ),
+                                              )
+                                              : Text(
+                                                reviewText,
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
                                         ],
+                                      ),
+                                    ),
+                                    if (isEditing)
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                        ),
+                                        onPressed: () {
+                                          editReview(
+                                            reviewId,
+                                            textController.text,
+                                          );
+                                          localSetState(
+                                            () => isEditing = false,
+                                          );
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.transparent,
+                                              ),
+                                        ),
+                                      )
+                                    else
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.green,
+                                        ),
+                                        onPressed: () {
+                                          localSetState(() => isEditing = true);
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.transparent,
+                                              ),
+                                        ),
+                                      ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder:
+                                              (context) => AlertDialog(
+                                                title: const Text(
+                                                  'Delete Review',
+                                                ),
+                                                content: const Text(
+                                                  'Are you sure you want to delete this review?',
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed:
+                                                        () => Navigator.pop(
+                                                          context,
+                                                        ),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      deleteReview(reviewId);
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text('Delete'),
+                                                  ),
+                                                ],
+                                              ),
+                                        );
+                                      },
+                                      style: ButtonStyle(
+                                        backgroundColor: WidgetStatePropertyAll(
+                                          Colors.transparent,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          )
-                          .toList(),
+                            );
+                          },
+                        );
+                      }).toList(),
                 ),
               ],
             ],
