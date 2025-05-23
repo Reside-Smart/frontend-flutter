@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:reside_smart_flutter/Bindings/GlobalBinding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,7 +9,7 @@ import 'Routes/AppRoutes.dart';
 
 void main() async {
   await GetStorage.init();
-
+  await dotenv.load(fileName: ".env");
   Api.initializeInterceptors();
   runApp(MyApp());
 }
