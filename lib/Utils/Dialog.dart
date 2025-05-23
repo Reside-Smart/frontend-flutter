@@ -9,7 +9,7 @@ class AppDialog {
       barrierDismissible: false,
     );
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 7), () {
       if (Get.isDialogOpen ?? false) {
         Get.back(); // Close the dialog
       }
@@ -23,7 +23,7 @@ class AppDialog {
       barrierDismissible: false,
     );
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 7), () {
       if (Get.isDialogOpen ?? false) {
         Get.back(); // Close the dialog
       }

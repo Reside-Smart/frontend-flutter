@@ -26,8 +26,8 @@ class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               )
               : null,
-      elevation: 3,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
+      elevation: 0,
       surfaceTintColor: Colors.transparent,
       title: Text(title, style: TextStyle(color: Colors.black)),
       centerTitle: true,

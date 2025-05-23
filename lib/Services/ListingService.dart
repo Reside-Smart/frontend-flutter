@@ -228,20 +228,10 @@ class ListingService extends GetxService {
     }
   }
 
-  Future<void> cancleRentaloption(int id) async {
-    try {
-      final response = await Api.dio.post('/cancel-rental-option/$id');
+  Future<bool> cancleRentaloption(int id) async {
+    final response = await Api.dio.post('/cancel-rental-option/$id');
 
-      print(response);
-
-      if (response.statusCode == 200) {
-        print('rental option cancled successfully');
-      } else {
-        print('Failed to cancle rental option');
-      }
-    } catch (e) {
-      print('Error cancling rental option: $e');
-    }
+    return response.statusCode == 200;
   }
 
   Future<void> editRentalOption(

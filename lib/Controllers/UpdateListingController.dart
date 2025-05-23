@@ -41,12 +41,14 @@ class UpdateListingController extends GetxController {
     }
   }
 
-  Future<void> cancleOption(int id) async {
+  Future<bool> cancleOption(int id) async {
     try {
       isLoading.value = true;
 
-      await _listingservice.cancleRentaloption(id);
+      final result = await _listingservice.cancleRentaloption(id);
+      return result;
     } catch (e) {
+      return false;
     } finally {
       isLoading.value = false;
     }

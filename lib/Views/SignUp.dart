@@ -41,22 +41,22 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
             horizontal: screenWidth * 0.05, // Adjust horizontal padding
             vertical: screenHeight * 0.02, // Adjust vertical padding
           ),
-          child: Obx(
-            () => SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Title Text
-                    const SizedBox(height: 12),
-                    MyTitle(title: "Create an Account"),
-                    SizedBox(
-                      height: screenHeight * 0.05, // Responsive spacing
-                    ),
-                    // Name TextFormField
-                    TextFormField(
+          child: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Title Text
+                  const SizedBox(height: 12),
+                  MyTitle(title: "Create an Account"),
+                  SizedBox(
+                    height: screenHeight * 0.05, // Responsive spacing
+                  ),
+                  // Name TextFormField
+                  Obx(
+                    () => TextFormField(
                       controller: nameController,
                       decoration: InputDecoration(
                         labelText: "Name",
@@ -70,9 +70,11 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                         return null;
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Username TextFormField
-                    IntlPhoneField(
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Username TextFormField
+                  Obx(
+                    () => IntlPhoneField(
                       decoration: InputDecoration(
                         labelText: "Phone Number",
                         prefixIcon: const Icon(Icons.phone),
@@ -87,9 +89,12 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                         phoneNumberController.text = phone.completeNumber;
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Email TextFormField
-                    TextFormField(
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Email TextFormField
+                  Obx(
+                    () => TextFormField(
                       controller: emailController,
                       decoration: InputDecoration(
                         labelText: "Email",
@@ -107,9 +112,11 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                         return null;
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Password TextFormField
-                    TextFormField(
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Password TextFormField
+                  Obx(
+                    () => TextFormField(
                       controller: passwordController,
                       decoration: InputDecoration(
                         labelText: "Password",
@@ -128,13 +135,18 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                       },
                       obscureText: true,
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Password Confirmation TextFormField
-                    TextFormField(
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Password Confirmation TextFormField
+                  Obx(
+                    () => TextFormField(
                       controller: passwordConfirmationController,
                       decoration: InputDecoration(
                         labelText: "Confirm Password",
                         prefixIcon: const Icon(Icons.lock),
+                        errorText:
+                            signUpController
+                                .fieldErrors['password_confirmation'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -148,9 +160,11 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                       },
                       obscureText: true,
                     ),
-                    SizedBox(height: screenHeight * 0.03),
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
 
-                    ElevatedButton(
+                  Obx(
+                    () => ElevatedButton(
                       onPressed: () {
                         if (!signUpController.isLoading.value &&
                             formKey.currentState!.validate()) {
@@ -174,38 +188,38 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                               )
                               : const Text("Sign Up"),
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Already have an account? Text Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account? ",
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Already have an account? Text Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Already have an account? ",
+                        style: TextStyle(
+                          fontSize: 16, // Responsive font size
+                        ),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          Get.offAndToNamed('/signIn');
+                        },
+                        child: Text(
+                          "Login",
                           style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize: 16, // Responsive font size
                           ),
                         ),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(0, 0),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () {
-                            Get.offAndToNamed('/signIn');
-                          },
-                          child: Text(
-                            "Login",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16, // Responsive font size
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

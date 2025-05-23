@@ -348,12 +348,16 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                                               message:
                                                   "Are you sure you want to cancel this renting option?",
                                               onConfirm: () async {
-                                                updateListingController
-                                                    .cancleOption(
-                                                      rentField.id!,
-                                                    );
-                                                rentPriceController
-                                                    .removeOption(index);
+                                                bool result =
+                                                    await updateListingController
+                                                        .cancleOption(
+                                                          rentField.id!,
+                                                        );
+
+                                                if (result) {
+                                                  rentPriceController
+                                                      .removeOption(index);
+                                                }
                                               },
                                             );
                                           } else {

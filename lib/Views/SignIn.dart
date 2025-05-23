@@ -34,27 +34,27 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
             horizontal: screenWidth * 0.05, // Adjust horizontal padding
             vertical: screenHeight * 0.02, // Adjust vertical padding
           ),
-          child: Obx(
-            () => SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Title Text
-                    const SizedBox(height: 12),
-                    MyTitle(title: "Login"),
-                    SizedBox(
-                      height: screenHeight * 0.05, // Responsive spacing
-                    ),
-                    // Phone Number
-                    TextFormField(
+          child: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Title Text
+                  const SizedBox(height: 12),
+                  MyTitle(title: "Login"),
+                  SizedBox(
+                    height: screenHeight * 0.05, // Responsive spacing
+                  ),
+                  // Phone Number
+                  Obx(
+                    () => TextFormField(
                       controller: emailController,
                       decoration: InputDecoration(
                         labelText: "Email",
                         prefixIcon: Icon(Icons.email),
-                        errorText: signInController.fieldErrors['phone_number'],
+                        errorText: signInController.fieldErrors['email'],
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -63,9 +63,11 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                         return null;
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Password
-                    TextFormField(
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Password
+                  Obx(
+                    () => TextFormField(
                       controller: passwordController,
                       decoration: InputDecoration(
                         labelText: "Password",
@@ -83,32 +85,34 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                       },
                       obscureText: true,
                     ),
-                    SizedBox(height: screenHeight * 0.01),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size(0, 0),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () {
-                            Get.toNamed('forget-password');
-                          },
-                          child: Text(
-                            "Forget Password?",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12, // Responsive font size
-                            ),
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          Get.toNamed('forget-password');
+                        },
+                        child: Text(
+                          "Forget Password?",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12, // Responsive font size
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Signup Button
-                    ElevatedButton(
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Signup Button
+                  Obx(
+                    () => ElevatedButton(
                       onPressed: () {
                         if (!signInController.isLoading.value &&
                             formKey.currentState!.validate()) {
@@ -129,38 +133,38 @@ class _SignInPageState extends State<SignInPage> with GlobalFunctions {
                               )
                               : Text("Sign In"),
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    // Already have an account? Text Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account? ",
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  // Already have an account? Text Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account? ",
+                        style: TextStyle(
+                          fontSize: 16, // Responsive font size
+                        ),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          Get.offAndToNamed('/signUp');
+                        },
+                        child: Text(
+                          "Sign Up",
                           style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize: 16, // Responsive font size
                           ),
                         ),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(0, 0),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () {
-                            Get.offAndToNamed('/signUp');
-                          },
-                          child: Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16, // Responsive font size
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
