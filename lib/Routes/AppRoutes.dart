@@ -20,6 +20,7 @@ import 'package:reside_smart_flutter/Bindings/ViewSingleListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ViewSingleTranasctionBinding.dart';
 import 'package:reside_smart_flutter/Views/AddListingDiscount.dart';
 import 'package:reside_smart_flutter/Views/AddReviews.dart';
+import 'package:reside_smart_flutter/Views/Dashboard.dart';
 import 'package:reside_smart_flutter/Views/Discount.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
@@ -70,6 +71,7 @@ class AppRoutes {
   static const String addReview = '/add-review';
   static const String viewReviews = '/view-review';
   static const String filter = '/filter';
+  static const String dashboard = '/dashboard';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -155,5 +157,6 @@ class AppRoutes {
     GetPage(name: addReview, page: () => AddReviews()),
     GetPage(name: viewReviews, page: () => ViewAllReviews()),
     GetPage(name: filter, page: () => FilterPage(), binding: FilterBinding()),
+    GetPage(name: dashboard, page: () => DashboardPage()),
   ];
 }

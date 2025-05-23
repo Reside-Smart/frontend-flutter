@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:reside_smart_flutter/Controllers/PurchaseListingController.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyTransactionCard.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class PurchaseListing extends StatefulWidget {
   const PurchaseListing({super.key});
@@ -27,19 +27,24 @@ class _PurchaseListingState extends State<PurchaseListing>
   final TextEditingController noteController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
+  final RxInt quantity = 1.obs;
   final TransactionService transactionService = Get.find<TransactionService>();
 
   String selectedMethod = 'cash';
   late final ListingModel listing;
   dynamic selectedRentalOption;
-  DateTime? selectedDate;
   List<DateTime> bookedDates = [];
+  final RxBool isLoading = false.obs;
 
   Future<void> loadBookedDates() async {
-    bookedDates = await transactionService.getBookedDays(
-      listingId: listing.id!,
-    );
-    setState(() {});
+    isLoading.value = true;
+    try {
+      bookedDates = await transactionService.getBookedDays(
+        listingId: listing.id!,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override
@@ -51,492 +56,712 @@ class _PurchaseListingState extends State<PurchaseListing>
     loadBookedDates();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    print(listing);
-    print(selectedRentalOption);
-    print(listing.discounts);
-    print('Selected Rental Option: $selectedRentalOption');
+  DateTime calculateEndDate(DateTime startDate, int quantityValue) {
+    final rentalOption = listing.rentalOptions?.firstWhere(
+      (option) => option.id == selectedRentalOption,
+    );
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: MyMainAppBar(title: 'Purchase Listing'),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.05,
-                vertical: screenHeight * 0.02,
-              ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TransactionCard(
-                      id: listing.id!,
-                      image:
-                          (listing.images != null && listing.images!.isNotEmpty)
-                              ? listing.images!.first
-                              : '',
-                      name: listing.name ?? 'No name',
-                      price: listing.price?.toString() ?? '',
-                      rating: listing.averageReviews?.toString() ?? '',
-                      location: listing.address ?? 'No address',
-                      type: listing.type ?? '',
-                      rentalOptions: listing.rentalOptions ?? [],
-                      selectedRentalOptionId: selectedRentalOption,
-                      discounts: listing.discounts ?? [],
-                    ),
-                    SizedBox(height: 40),
-                    if (listing.type == 'rent') ...[
-                      const Text(
-                        "Booked Days:",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+    if (rentalOption == null) return startDate;
+
+    // If quantity is 1 and unit is day, return the same day
+    if (quantityValue == 1 &&
+        (rentalOption.unit.toLowerCase().trim() == 'day' ||
+            rentalOption.unit.toLowerCase().trim() == 'days')) {
+      return startDate;
+    }
+
+    int duration = rentalOption.duration * quantityValue;
+    String unit = rentalOption.unit.toLowerCase().trim();
+
+    switch (unit) {
+      case 'day':
+      case 'days':
+        return startDate.add(
+          Duration(days: duration - 1),
+        ); // Subtract 1 to make end date inclusive
+      case 'week':
+      case 'weeks':
+        return startDate.add(
+          Duration(days: duration * 7 - 1),
+        ); // Subtract 1 to make end date inclusive
+      case 'month':
+      case 'months':
+        // Calculate months, then subtract 1 day to make it inclusive
+        final endDate = DateTime(
+          startDate.year,
+          startDate.month + duration,
+          startDate.day,
+        );
+        return endDate.subtract(Duration(days: 1));
+      case 'year':
+      case 'years':
+        // Calculate years, then subtract 1 day to make it inclusive
+        final endDate = DateTime(
+          startDate.year + duration,
+          startDate.month,
+          startDate.day,
+        );
+        return endDate.subtract(Duration(days: 1));
+      default:
+        return startDate.add(
+          Duration(days: duration - 1),
+        ); // Default to days, inclusive
+    }
+  }
+
+  bool isDateBooked(DateTime date) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    return bookedDates.any((d) => isSameDay(d, normalizedDate));
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  void _showDatePicker() async {
+    // Get rental option name for display
+    final rentalOption = listing.rentalOptions?.firstWhere(
+      (option) => option.id == selectedRentalOption,
+    );
+
+    if (rentalOption == null) {
+      AppDialog.showError("Rental option not found.");
+      return;
+    }
+
+    String optionDisplay = '${rentalOption.duration} ${rentalOption.unit}';
+
+    final dateFormat = DateFormat('MMM d, yyyy');
+    DateTime? pickedDate;
+    DateTime initialDate = DateTime.now();
+
+    // Find the next available date
+    while (isDateBooked(initialDate)) {
+      initialDate = initialDate.add(const Duration(days: 1));
+    }
+
+    // Show date picker dialog
+    await showDialog(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setDialogState) {
+              final endDate =
+                  pickedDate != null
+                      ? calculateEndDate(pickedDate!, quantity.value)
+                      : null;
+
+              return AlertDialog(
+                title: const Text('Select Rental Dates'),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Rental option: $optionDisplay',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-
-                      TableCalendar(
-                        firstDay: DateTime.now(),
-                        lastDay: DateTime.utc(2100, 12, 31),
-                        focusedDay: DateTime.now(),
-                        daysOfWeekVisible: false,
-                        headerStyle: HeaderStyle(formatButtonVisible: false),
-                        selectedDayPredicate: (day) => false,
-                        enabledDayPredicate: (day) {
-                          final normalizedDay = DateTime(
-                            day.year,
-                            day.month,
-                            day.day,
-                          );
-                          return !bookedDates.any(
-                            (d) => isSameDay(d, normalizedDay),
-                          );
-                        },
-                        calendarBuilders: CalendarBuilders(
-                          defaultBuilder: (context, day, _) {
-                            final normalizedDay = DateTime(
-                              day.year,
-                              day.month,
-                              day.day,
-                            );
-                            final isBooked = bookedDates.any(
-                              (d) => isSameDay(d, normalizedDay),
-                            );
-                            if (isBooked) {
-                              return Center(
-                                child: Text(
-                                  '${day.day}',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                ),
-                              );
-                            }
-                            return null;
-                          },
-
-                          disabledBuilder:
-                              (context, day, _) => Center(
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Text(
-                                      '${day.day}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    Positioned(
-                                      top: 9,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        height: 2,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                        ),
-                      ),
-
                       SizedBox(height: 20),
-                      const Text(
-                        "Date:",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
 
+                      // Quantity selector
+                      Text('Quantity:'),
                       Row(
                         children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: startDateController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                labelText: "Start Date",
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.calendar_today),
-                              ),
-
-                              onTap: () async {
-                                DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-
-                                if (picked != null) {
-                                  final rentalOption = listing.rentalOptions
-                                      ?.firstWhere(
-                                        (option) =>
-                                            option.id == selectedRentalOption,
-                                      );
-
-                                  if (rentalOption == null) {
-                                    AppDialog.showError(
-                                      "Rental option not found.",
-                                    );
-                                    return;
-                                  }
-
-                                  setState(() {
-                                    startDateController.text =
-                                        picked.toString().split(' ')[0];
-
-                                    int duration = rentalOption.duration;
-                                    String unit =
-                                        rentalOption.unit.toLowerCase().trim();
-
-                                    DateTime endDate;
-                                    switch (unit) {
-                                      case 'day':
-                                      case 'days':
-                                        endDate = picked.add(
-                                          Duration(days: duration),
-                                        );
-                                        break;
-                                      case 'week':
-                                      case 'weeks':
-                                        endDate = picked.add(
-                                          Duration(days: duration * 7),
-                                        );
-                                        break;
-                                      case 'month':
-                                      case 'months':
-                                        endDate = DateTime(
-                                          picked.year,
-                                          picked.month + duration,
-                                          picked.day,
-                                        );
-                                        break;
-                                      case 'year':
-                                      case 'years':
-                                        endDate = DateTime(
-                                          picked.year + duration,
-                                          picked.month,
-                                          picked.day,
-                                        );
-                                        break;
-                                      default:
-                                        endDate = picked.add(
-                                          Duration(days: duration),
-                                        );
-                                    }
-
-                                    endDateController.text =
-                                        endDate.toString().split(' ')[0];
-                                  });
-                                }
-                              },
-                            ),
+                          IconButton(
+                            icon: Icon(Icons.remove_circle_outline),
+                            onPressed:
+                                quantity.value > 1
+                                    ? () =>
+                                        setDialogState(() => quantity.value--)
+                                    : null,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextFormField(
-                              controller: endDateController,
-                              readOnly: true,
-                              enabled: false,
-                              decoration: const InputDecoration(
-                                labelText: "End Date",
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.calendar_today),
-                              ),
-                            ),
+                          Text(
+                            '${quantity.value}',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add_circle_outline),
+                            onPressed:
+                                () => setDialogState(() => quantity.value++),
                           ),
                         ],
                       ),
-                    ],
+                      SizedBox(height: 20),
 
-                    SizedBox(height: 30),
-                    Text(
-                      "Payment Method",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C2C54),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedMethod = 'cash';
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: Duration(milliseconds: 200),
-                            width: 150,
-                            height: 150,
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF2BC0E4), Color(0xFFEAECC6)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                      // Date picker
+                      Text('Start date:'),
+                      SizedBox(height: 8),
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: initialDate,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(Duration(days: 365)),
+                            selectableDayPredicate: (day) => !isDateBooked(day),
+                          );
+
+                          if (picked != null) {
+                            setDialogState(() => pickedDate = picked);
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                pickedDate != null
+                                    ? dateFormat.format(pickedDate!)
+                                    : 'Select date',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color:
+                                      pickedDate != null
+                                          ? Colors.black
+                                          : Colors.grey.shade600,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow:
-                                  selectedMethod == 'cash'
-                                      ? [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 10,
-                                        ),
-                                      ]
-                                      : [],
-                            ),
-                            child: Stack(
-                              children: [
-                                if (selectedMethod == 'cash')
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "Cash",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Icon(
-                                    Icons.toggle_on,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 16),
+                      ),
 
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedMethod = 'stripe';
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: Duration(milliseconds: 200),
-                            width: 150,
-                            height: 150,
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF635BFF),
-                                  Color.fromARGB(255, 159, 152, 255),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                      if (pickedDate != null && endDate != null) ...[
+                        SizedBox(height: 20),
+                        Text('End date:'),
+                        SizedBox(height: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.grey.shade100,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.event_available, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                dateFormat.format(endDate),
+                                style: TextStyle(fontSize: 16),
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow:
-                                  selectedMethod == 'stripe'
-                                      ? [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 10,
-                                        ),
-                                      ]
-                                      : [],
-                            ),
-                            child: Stack(
-                              children: [
-                                if (selectedMethod == 'stripe')
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "Stripe",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Text(
-                                    'VISA',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            ],
+                          ),
+                        ),
+
+                        // Add helper text for same day rental
+                        if (pickedDate!.isAtSameMomentAs(endDate!)) ...[
+                          SizedBox(height: 8),
+                          Text(
+                            'Same day rental (pick-up and return on the same day)',
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
+                        ],
+
+                        // Duration summary
+                        SizedBox(height: 16),
+                        Text(
+                          quantity.value == 1 &&
+                                  (rentalOption.unit.toLowerCase().trim() ==
+                                          'day' ||
+                                      rentalOption.unit.toLowerCase().trim() ==
+                                          'days')
+                              ? 'Same day rental'
+                              : 'Total duration: ${quantity.value} × $optionDisplay',
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('CANCEL'),
+                  ),
+                  ElevatedButton(
+                    onPressed:
+                        pickedDate == null
+                            ? null
+                            : () {
+                              startDateController.text =
+                                  pickedDate.toString().split(' ')[0];
+                              endDateController.text =
+                                  endDate.toString().split(' ')[0];
+                              Navigator.pop(context);
+                              setState(() {});
+                            },
+                    child: Text('CONFIRM'),
+                  ),
+                ],
+              );
+            },
+          ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    return Scaffold(
+      appBar: MyMainAppBar(title: 'Complete Your Purchase'),
+      body: Obx(() {
+        if (isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Form(
+            key: formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product summary card
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order Summary',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Divider(height: 24),
+                        TransactionCard(
+                          id: listing.id!,
+                          image:
+                              (listing.images != null &&
+                                      listing.images!.isNotEmpty)
+                                  ? listing.images!.first
+                                  : '',
+                          name: listing.name ?? 'No name',
+                          price: listing.price?.toString() ?? '',
+                          rating: listing.averageReviews?.toString() ?? '',
+                          location: listing.address ?? 'No address',
+                          type: listing.type ?? '',
+                          rentalOptions: listing.rentalOptions ?? [],
+                          selectedRentalOptionId: selectedRentalOption,
+                          discounts: listing.discounts ?? [],
+                          quantity: quantity.value,
                         ),
                       ],
                     ),
-                    SizedBox(height: 60),
+                  ),
+                ),
 
-                    Center(
-                      child: SizedBox(
-                        width: 250,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              if (listing.type == 'rent' &&
-                                  (startDateController.text.isEmpty ||
-                                      endDateController.text.isEmpty)) {
-                                AppDialog.showError(
-                                  "Please select valid dates.",
-                                );
-                                return;
-                              }
+                SizedBox(height: 24),
 
-                              final start = DateTime.tryParse(
-                                startDateController.text,
+                // Rental details section (only for rent type)
+                if (listing.type == 'rent') ...[
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Rental Details',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Divider(height: 24),
+
+                          // Date selection
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text('Rental Period'),
+                            subtitle:
+                                startDateController.text.isNotEmpty
+                                    ? Text(
+                                      '${dateFormat.format(DateTime.parse(startDateController.text))} - ${dateFormat.format(DateTime.parse(endDateController.text))}',
+                                    )
+                                    : Text('Select rental dates'),
+                            trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                            onTap: _showDatePicker,
+                          ),
+
+                          // Quantity display
+                          if (startDateController.text.isNotEmpty) ...[
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text('Quantity'),
+                              subtitle: Text('${quantity.value} units'),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 24),
+                ],
+
+                // Payment method section
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Payment Method',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Divider(height: 24),
+
+                        // Responsive payment method options layout
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            // If screen is wide enough, use row layout
+                            if (constraints.maxWidth > 500) {
+                              return Row(
+                                children: [
+                                  Expanded(child: _buildCashOption()),
+                                  Expanded(child: _buildStripeOption()),
+                                ],
                               );
-                              final now = DateTime.now();
-                              if (start != null &&
-                                  start.isBefore(
-                                    DateTime(now.year, now.month, now.day),
-                                  )) {
-                                AppDialog.showError(
-                                  "Start date cannot be in the past.",
-                                );
-                                return;
-                              }
-
-                              final rentalOption = listing.rentalOptions
-                                  ?.firstWhereOrNull(
-                                    (option) =>
-                                        option.id == selectedRentalOption,
-                                  );
-
-                              final double basePrice =
-                                  rentalOption?.price ?? listing.price ?? 0.0;
-
-                              final discount = listing.discounts
-                                  ?.firstWhereOrNull((d) {
-                                    final isActive = d.status == 'active';
-                                    final matchRental =
-                                        d.rentalOptionId ==
-                                        selectedRentalOption;
-                                    final matchListing =
-                                        d.listingId == listing.id &&
-                                        d.rentalOptionId == null;
-                                    return isActive &&
-                                        (matchRental || matchListing);
-                                  });
-
-                              final double discountPercent =
-                                  discount != null
-                                      ? double.tryParse(
-                                            discount.percentage.toString(),
-                                          ) ??
-                                          0.0
-                                      : 0.0;
-
-                              final double amountPaid =
-                                  discountPercent > 0
-                                      ? basePrice -
-                                          (basePrice * discountPercent / 100)
-                                      : basePrice;
-
-                              final String paymentStatus =
-                                  selectedMethod == 'cash' ? 'unpaid' : 'paid';
-
-                              final buyerId =
-                                  Get.find<AuthService>().globalUser!.id;
-                              final sellerId = listing.userId;
-
-                              if (sellerId == null) {
-                                AppDialog.showError("Listing owner not found.");
-                                return;
-                              }
-
-                              purchaseListingController.createTransaction(
-                                transactionType: listing.type!,
-                                totalPrice: basePrice,
-                                amountPaid: amountPaid,
-                                paymentMethod: selectedMethod,
-                                paymentStatus: paymentStatus,
-                                listingId: listing.id!,
-                                buyerId: buyerId,
-                                sellerId: sellerId,
-                                discountId: discount?.discountId,
-                                rentalOptionId: selectedRentalOption,
-                                checkInDate:
-                                    listing.type == 'rent'
-                                        ? startDateController.text
-                                        : DateTime.now().toString().split(
-                                          ' ',
-                                        )[0],
-                                checkOutDate:
-                                    listing.type == 'rent'
-                                        ? endDateController.text
-                                        : null,
+                            } else {
+                              // For smaller screens, use column layout
+                              return Column(
+                                children: [
+                                  _buildCashOption(),
+                                  _buildStripeOption(),
+                                ],
                               );
                             }
                           },
-
-                          child: Text("Purchase Listing"),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 32),
+
+                // Cost breakdown
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cost Breakdown',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Divider(height: 24),
+
+                        PriceBreakdownWidget(
+                          listing: listing,
+                          selectedRentalOption: selectedRentalOption,
+                          quantity: quantity.value,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 40),
+
+                // Purchase button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        if (listing.type == 'rent' &&
+                            (startDateController.text.isEmpty ||
+                                endDateController.text.isEmpty)) {
+                          AppDialog.showError("Please select rental dates.");
+                          return;
+                        }
+
+                        final start = DateTime.tryParse(
+                          startDateController.text,
+                        );
+                        final now = DateTime.now();
+                        if (start != null &&
+                            start.isBefore(
+                              DateTime(now.year, now.month, now.day),
+                            )) {
+                          AppDialog.showError(
+                            "Start date cannot be in the past.",
+                          );
+                          return;
+                        }
+
+                        final rentalOption = listing.rentalOptions
+                            ?.firstWhereOrNull(
+                              (option) => option.id == selectedRentalOption,
+                            );
+
+                        final double baseUnitPrice =
+                            rentalOption?.price ?? listing.price ?? 0.0;
+
+                        final double basePrice = baseUnitPrice * quantity.value;
+
+                        final discount = listing.discounts?.firstWhereOrNull((
+                          d,
+                        ) {
+                          final isActive = d.status == 'active';
+                          final matchRental =
+                              d.rentalOptionId == selectedRentalOption;
+                          final matchListing =
+                              d.listingId == listing.id &&
+                              d.rentalOptionId == null;
+                          return isActive && (matchRental || matchListing);
+                        });
+
+                        final double discountPercent =
+                            discount != null
+                                ? double.tryParse(
+                                      discount.percentage.toString(),
+                                    ) ??
+                                    0.0
+                                : 0.0;
+
+                        final double amountPaid =
+                            discountPercent > 0
+                                ? basePrice -
+                                    (basePrice * discountPercent / 100)
+                                : basePrice;
+
+                        final String paymentStatus =
+                            selectedMethod == 'cash' ? 'unpaid' : 'paid';
+
+                        final buyerId = Get.find<AuthService>().globalUser!.id;
+                        final sellerId = listing.userId;
+
+                        if (sellerId == null) {
+                          AppDialog.showError("Listing owner not found.");
+                          return;
+                        }
+
+                        purchaseListingController.createTransaction(
+                          transactionType: listing.type!,
+                          totalPrice: basePrice,
+                          amountPaid: amountPaid,
+                          paymentMethod: selectedMethod,
+                          paymentStatus: paymentStatus,
+                          listingId: listing.id!,
+                          buyerId: buyerId,
+                          sellerId: sellerId,
+                          discountId: discount?.discountId,
+                          rentalOptionId: selectedRentalOption,
+                          quantity: quantity.value,
+                          checkInDate:
+                              listing.type == 'rent'
+                                  ? startDateController.text
+                                  : DateTime.now().toString().split(' ')[0],
+                          checkOutDate:
+                              listing.type == 'rent'
+                                  ? endDateController.text
+                                  : null,
+                        );
+                      }
+                    },
+                    child: Text(
+                      "Complete Purchase",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ),
-              ),
+
+                SizedBox(height: 24),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildCashOption() {
+    return RadioListTile<String>(
+      title: Row(
+        children: [
+          Icon(Icons.money, color: Color(0xFF2BC0E4)),
+          SizedBox(width: 8),
+          Text('Cash'),
+        ],
+      ),
+      value: 'cash',
+      groupValue: selectedMethod,
+      onChanged: (value) {
+        setState(() {
+          selectedMethod = value!;
+        });
+      },
+    );
+  }
+
+  Widget _buildStripeOption() {
+    return RadioListTile<String>(
+      title: Row(
+        children: [
+          Icon(Icons.credit_card, color: Color(0xFF635BFF)),
+          SizedBox(width: 8),
+          Text('Stripe'),
+        ],
+      ),
+      value: 'stripe',
+      groupValue: selectedMethod,
+      onChanged: (value) {
+        setState(() {
+          selectedMethod = value!;
+        });
+      },
+    );
+  }
+}
+
+class PriceBreakdownWidget extends StatelessWidget {
+  final ListingModel listing;
+  final dynamic selectedRentalOption;
+  final int quantity;
+
+  const PriceBreakdownWidget({
+    required this.listing,
+    required this.selectedRentalOption,
+    required this.quantity,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final rentalOption = listing.rentalOptions?.firstWhereOrNull(
+      (option) => option.id == selectedRentalOption,
+    );
+
+    final double baseUnitPrice = rentalOption?.price ?? listing.price ?? 0.0;
+    final double basePrice = baseUnitPrice * quantity;
+
+    final discount = listing.discounts?.firstWhereOrNull((d) {
+      final isActive = d.status == 'active';
+      final matchRental = d.rentalOptionId == selectedRentalOption;
+      final matchListing =
+          d.listingId == listing.id && d.rentalOptionId == null;
+      return isActive && (matchRental || matchListing);
+    });
+
+    final double discountPercent =
+        discount != null
+            ? double.tryParse(discount.percentage.toString()) ?? 0.0
+            : 0.0;
+
+    final double discountAmount =
+        discountPercent > 0 ? (basePrice * discountPercent / 100) : 0.0;
+
+    final double finalPrice = basePrice - discountAmount;
+
+    final currencyFormat = NumberFormat.currency(symbol: '\$');
+
+    return Column(
+      children: [
+        // Base price row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Base price'),
+            Text(currencyFormat.format(baseUnitPrice)),
+          ],
+        ),
+        SizedBox(height: 8),
+
+        // Quantity row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text('Quantity'), Text('x $quantity')],
+        ),
+        SizedBox(height: 8),
+
+        // Subtotal row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text('Subtotal'), Text(currencyFormat.format(basePrice))],
+        ),
+
+        // Discount row (if applicable)
+        if (discountPercent > 0) ...[
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Discount (${discountPercent.toStringAsFixed(0)}%)'),
+              Text('- ${currencyFormat.format(discountAmount)}'),
+            ],
+          ),
+        ],
+
+        Divider(height: 24),
+
+        // Total row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              currencyFormat.format(finalPrice),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

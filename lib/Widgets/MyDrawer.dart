@@ -58,6 +58,13 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            leading: Icon(Icons.dashboard),
+            title: Text("Dashboard"),
+            onTap: () {
+              Get.toNamed('dashboard');
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.house_rounded),
             title: Text("Listing"),
             onTap: () {

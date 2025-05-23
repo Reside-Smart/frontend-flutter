@@ -1,9 +1,14 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:reside_smart_flutter/Models/DashboardModels.dart';
 import 'package:reside_smart_flutter/Services/AnalyticsService.dart';
+import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Services/DashboardService.dart';
 import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
+import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,18 +18,41 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final DashboardService dashboardService = Get.put(DashboardService());
   int selectedTab = 0;
   bool isLoading = false;
   final AuthService authService = Get.find<AuthService>();
   final AnalyticsService analyticsService = Get.find<AnalyticsService>();
+  final Rx<OverviewData> overview = OverviewData().obs;
+  final Rx<RevenueData> revenueData = RevenueData().obs;
 
   String? errorMessage;
-  Map<String, dynamic>? analytics;
+  String _revenueTimeframe = 'month';
 
   @override
   void initState() {
     super.initState();
     fetchAnalytics();
+  }
+
+  Future<void> fetchOverview() async {
+    try {
+      final response = await Api.dio.get('/dashboard/overview');
+      overview.value = OverviewData.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching overview: $e');
+    }
+  }
+
+  Future<void> fetchRevenueOverTime(String timeframe) async {
+    try {
+      final response = await Api.dio.get(
+        '/dashboard/revenue?timeframe=$timeframe',
+      );
+      revenueData.value = RevenueData.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching revenue: $e');
+    }
   }
 
   Future<void> fetchAnalytics() async {
@@ -34,11 +62,11 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      final data = await analyticsService.fetchAnalytics();
-
-      setState(() {
-        analytics = data;
-      });
+      await Future.wait([
+        dashboardService.fetchOverview(),
+        dashboardService.fetchRevenueOverTime(_revenueTimeframe),
+      ]);
+      setState(() {});
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
@@ -95,6 +123,327 @@ class _ProfilePageState extends State<ProfilePage> {
               fontSize: 16,
               color: Colors.grey[700],
               fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(title, style: TextStyle(color: Colors.grey[600])),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildTimeframeChip(String label, String timeframe) {
+    final isSelected = _revenueTimeframe == timeframe;
+
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() => _revenueTimeframe = timeframe);
+          dashboardService.fetchRevenueOverTime(timeframe);
+        }
+      },
+      selectedColor: Theme.of(context).primaryColor,
+      labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
+    );
+  }
+
+  Widget _buildRevenueChart() {
+    final revenueData = dashboardService.revenueData.value;
+    if (revenueData.data.labels.isEmpty) {
+      return const Center(child: Text('No revenue data available'));
+    }
+
+    final spots = List.generate(
+      revenueData.data.labels.length,
+      (index) =>
+          FlSpot(index.toDouble(), revenueData.data.values[index].toDouble()),
+    );
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                if (value % 1 != 0) return const Text('');
+                return Text('\$${value.toInt()}');
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value.toInt() >= revenueData.data.labels.length ||
+                    value % 5 != 0) {
+                  return const Text('');
+                }
+
+                final label = revenueData.data.labels[value.toInt()];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    _revenueTimeframe == 'year'
+                        ? label.substring(5) // Show only MM for year view
+                        : label.substring(5), // Show MM-DD for month/week view
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+            ),
+          ),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(show: false),
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            color: Theme.of(context).primaryColor,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewTab() {
+    final overview = dashboardService.overview.value;
+    final currencyFormat = NumberFormat.currency(symbol: '\$');
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Dashboard header with view all button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Overview",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Get.toNamed('/dashboard');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "View Full Dashboard",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 24),
+
+          // Stats cards
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Properties',
+                  overview.listingsStats?.total.toString() ?? '0',
+                  Icons.home,
+                  Colors.blue,
+                ),
+              ),
+              Expanded(
+                child: _buildStatCard(
+                  'Revenue',
+                  currencyFormat.format(
+                    overview.transactionStats?.totalRevenue ?? 0,
+                  ),
+                  Icons.attach_money,
+                  Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Sales',
+                  overview.transactionStats?.totalSales.toString() ?? '0',
+                  Icons.shopping_cart,
+                  Colors.orange,
+                ),
+              ),
+              Expanded(
+                child: _buildStatCard(
+                  'Rating',
+                  '${overview.feedbackStats?.averageRating ?? 0} ★',
+                  Icons.star,
+                  Colors.amber,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+          _buildSectionTitle('Revenue Over Time'),
+
+          // Revenue timeframe selector
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildTimeframeChip('Week', 'week'),
+                const SizedBox(width: 8),
+                _buildTimeframeChip('Month', 'month'),
+                const SizedBox(width: 8),
+                _buildTimeframeChip('Year', 'year'),
+              ],
+            ),
+          ),
+
+          // Revenue chart
+          Obx(() {
+            if (dashboardService.revenueData.value.timeframe.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Text('No revenue data available'),
+                ),
+              );
+            }
+
+            return SizedBox(height: 250, child: _buildRevenueChart());
+          }),
+
+          const SizedBox(height: 24),
+          _buildSectionTitle('Recent Activity'),
+
+          // Activity stats
+          Obx(() {
+            final activity = dashboardService.activity.value;
+            return Column(
+              children: [
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Icon(Icons.add_home, color: Colors.white),
+                  ),
+                  title: Text(
+                    '${activity.asSeller?.newListings ?? 0} new listings',
+                  ),
+                  subtitle: const Text('Last 30 days'),
+                ),
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.green,
+                    child: Icon(Icons.shopping_bag, color: Colors.white),
+                  ),
+                  title: Text('${activity.asSeller?.sales ?? 0} sales'),
+                  subtitle: const Text('Last 30 days'),
+                ),
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.orange,
+                    child: Icon(Icons.rate_review, color: Colors.white),
+                  ),
+                  title: Text(
+                    '${activity.asSeller?.receivedReviews ?? 0} reviews received',
+                  ),
+                  subtitle: const Text('Last 30 days'),
+                ),
+              ],
+            );
+          }),
+
+          // Bottom view full dashboard button
+          SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Get.toNamed('/dashboard');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                padding: EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: Icon(Icons.dashboard, color: Colors.white),
+              label: Text(
+                "Go to Full Dashboard",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ],
@@ -283,65 +632,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   )
                   : isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : errorMessage != null
-                  ? Center(child: Text(errorMessage!))
-                  : analytics == null
-                  ? Center(child: Text("No analytics available"))
-                  : GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 20,
-                    childAspectRatio: 1.1,
-                    children: [
-                      buildDashboardCard(
-                        title: "Total Listings",
-                        icon: Icons.home,
-                        value: "${analytics!['total_listings'] ?? 0}",
-                        iconColor: Colors.blue,
-                      ),
-                      buildDashboardCard(
-                        title: "Rent Listings",
-                        icon: Icons.key,
-                        value: "${analytics!['rent_listings'] ?? 0}",
-                        iconColor: Colors.orange,
-                      ),
-                      buildDashboardCard(
-                        title: "Sell Listings",
-                        icon: Icons.sell,
-                        value: "${analytics!['sell_listings'] ?? 0}",
-                        iconColor: Colors.green,
-                      ),
-                      buildDashboardCard(
-                        title: "Transactions",
-                        icon: Icons.receipt_long,
-                        value: "${analytics!['total_transactions'] ?? 0}",
-                        iconColor: Colors.purple,
-                      ),
-                      // buildDashboardCard(
-                      //   title: "Revenue",
-                      //   icon: Icons.attach_money,
-                      //   value:
-                      //       "\$${(analytics!['total_revenue'] ?? 0).toStringAsFixed(2)}",
-                      //   iconColor: Colors.teal,
-                      // ),
-                      buildDashboardCard(
-                        title: "Avg. Rating",
-                        icon: Icons.star_rate,
-                        value:
-                            "${(analytics!['average_rating'] ?? 0).toStringAsFixed(1)}",
-                        iconColor: Colors.amber,
-                      ),
-                      buildDashboardCard(
-                        title: "Reviews",
-                        icon: Icons.rate_review,
-                        value: "${analytics!['total_reviews'] ?? 0}",
-                        iconColor: Colors.redAccent,
-                      ),
-                    ],
-                  ),
+                  : _buildOverviewTab(),
             ],
           ),
         ),

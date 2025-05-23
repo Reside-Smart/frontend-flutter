@@ -15,6 +15,7 @@ class TransactionModel {
   int? sellerId;
   int? discountId;
   int? rentalOptionId;
+  int? quantity; // Added quantity field
   ListingModel? listing;
   ListingDiscountModel? discount;
 
@@ -32,6 +33,7 @@ class TransactionModel {
     this.sellerId,
     this.discountId,
     this.rentalOptionId,
+    this.quantity, // Added to constructor
     this.listing,
     this.discount,
   });
@@ -57,6 +59,10 @@ class TransactionModel {
       sellerId: json['seller_id'],
       discountId: json['discount_id'],
       rentalOptionId: json['rental_option_id'],
+      quantity:
+          json['quantity'] != null
+              ? int.tryParse(json['quantity'].toString())
+              : 1, // Parse quantity with default
 
       listing:
           json['listing'] != null
@@ -86,12 +92,14 @@ class TransactionModel {
       'seller_id': sellerId,
       'discount_id': discountId,
       'rental_option_id': rentalOptionId,
+      'quantity': quantity, // Added to JSON serialization
       'listing': listing,
+      'discount': discount,
     };
   }
 
   @override
   String toString() {
-    return 'TransactionModel{id: $id, type: $type, amountPaid: $amountPaid, paymentStatus: $paymentStatus, paymentMethod: $paymentMethod, checkInDate: $checkInDate, checkOutDate: $checkOutDate, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, discountId: $discountId}';
+    return 'TransactionModel{id: $id, type: $type, amountPaid: $amountPaid, paymentStatus: $paymentStatus, paymentMethod: $paymentMethod, checkInDate: $checkInDate, checkOutDate: $checkOutDate, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, discountId: $discountId, quantity: $quantity}';
   }
 }

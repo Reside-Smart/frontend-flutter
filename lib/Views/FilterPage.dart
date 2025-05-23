@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Widgets/MyHomeListingCard.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
@@ -18,6 +21,24 @@ class _FilterPageState extends State<FilterPage> {
   void initState() {
     super.initState();
     _controller = Get.put(FilterController());
+  }
+
+  double _formatPrice(double price) {
+    // Add your custom formatting logic here if needed
+    return price;
+  }
+
+  int _calculateDivisions(RangeValues values) {
+    final range = values.end - values.start;
+    if (range <= 10000) {
+      return 100;
+    } else if (range <= 100000) {
+      return 50;
+    } else if (range <= 500000) {
+      return 20;
+    } else {
+      return 10;
+    }
   }
 
   @override
@@ -72,26 +93,122 @@ class _FilterPageState extends State<FilterPage> {
                 "Price range",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              RangeSlider(
-                values: _controller.priceRange.value,
-                min: 0,
-                max: 10000,
-                divisions: 20,
-                labels: RangeLabels(
-                  '\$${_controller.priceRange.value.start.round()}',
-                  '\$${_controller.priceRange.value.end.round()}',
-                ),
-                onChanged: (r) {
-                  _controller.priceRange.value = r;
-                },
-              ),
+              SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('\$${_controller.priceRange.value.start.round()}'),
-                    Text('\$${_controller.priceRange.value.end.round()}'),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Min price',
+                            prefixIcon: Icon(Icons.attach_money, size: 18),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          initialValue:
+                              _controller.priceRange.value.start > 0
+                                  ? _controller.priceRange.value.start
+                                      .round()
+                                      .toString()
+                                  : '',
+                          onChanged: (value) {
+                            final newStart =
+                                value.isEmpty ? 0 : int.tryParse(value) ?? 0;
+                            _controller.priceRange.value = RangeValues(
+                              newStart.toDouble(),
+                              max(
+                                newStart.toDouble(),
+                                _controller.priceRange.value.end,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'to',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Max price',
+                            prefixIcon: Icon(Icons.attach_money, size: 18),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          initialValue:
+                              _controller.priceRange.value.end < 1000000
+                                  ? _controller.priceRange.value.end
+                                      .round()
+                                      .toString()
+                                  : '',
+                          onChanged: (value) {
+                            final newEnd =
+                                value.isEmpty
+                                    ? 1000000
+                                    : int.tryParse(value) ?? 1000000;
+                            _controller.priceRange.value = RangeValues(
+                              min(
+                                _controller.priceRange.value.start,
+                                newEnd.toDouble(),
+                              ),
+                              newEnd.toDouble(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Enter whole numbers only',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   ],
                 ),
               ),
