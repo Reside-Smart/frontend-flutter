@@ -42,6 +42,9 @@ dependencies:
   image_picker: any
   cached_network_image: any
   dropdown_search: ^5.0.6
+  table_calendar: ^3.0.9
+  url_launcher: any 
+
 
 dev_dependencies:
   flutter_test:

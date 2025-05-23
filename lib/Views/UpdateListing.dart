@@ -72,7 +72,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
     selectedType = updateListingController.listing!.type;
     priceController.text = updateListingController.listing!.price.toString();
     addressController.text = updateListingController.listing!.address!;
-    descriptionController.text = updateListingController.listing!.description!;
+    descriptionController.text =
+        updateListingController.listing!.description ?? "";
     featureController.features.value =
         updateListingController.listing!.features == null
             ? <FeatureField>[]

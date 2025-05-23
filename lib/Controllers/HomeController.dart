@@ -25,8 +25,10 @@ class HomeController extends GetxController {
     if (isNearbyEstatesLoading.value) return;
     try {
       isNearbyEstatesLoading.value = true;
+      final response = await _listingservice.getNearbyEstates();
+      nearbyEstates = response;
 
-      nearbyEstates = await _listingservice.getNearbyEstates();
+      print('Nearby Estates Length: ${nearbyEstates.length}');
     } catch (e) {
     } finally {
       isNearbyEstatesLoading.value = false;

@@ -20,7 +20,7 @@ class MyDrawer extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 48, // Slightly larger avatar
+                  width: 48,
                   height: 48,
                   child:
                       authService.globalUser?.image == null
@@ -76,7 +76,7 @@ class MyDrawer extends StatelessWidget {
             leading: Icon(Icons.assignment),
             title: Text("Transaction"),
             onTap: () {
-              // Handle action
+              Get.toNamed('transactions');
             },
           ),
           ListTile(
@@ -86,13 +86,7 @@ class MyDrawer extends StatelessWidget {
               // Handle action
             },
           ),
-          ListTile(
-            leading: Icon(Icons.chat),
-            title: Text("Chatbot"),
-            onTap: () {
-              // Handle action
-            },
-          ),
+
           ListTile(
             leading: Icon(Icons.logout),
             title: Text("Logout"),

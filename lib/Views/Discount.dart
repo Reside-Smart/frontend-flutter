@@ -42,7 +42,6 @@ class _DiscountPageState extends State<DiscountPage> {
           ),
           child: Column(
             children: [
-              // Dropdown + Add Button Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -81,7 +80,6 @@ class _DiscountPageState extends State<DiscountPage> {
               ),
               SizedBox(height: 30),
 
-              // Discounts List
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {

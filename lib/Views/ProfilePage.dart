@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:reside_smart_flutter/Services/AnalyticsService.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
-import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 
@@ -14,15 +14,99 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int selectedTab = 0;
+  bool isLoading = false;
   final AuthService authService = Get.find<AuthService>();
-  final RxBool isLoading = false.obs;
-  var fieldErrors = <String, String>{}.obs;
+  final AnalyticsService analyticsService = Get.find<AnalyticsService>();
+
+  String? errorMessage;
+  Map<String, dynamic>? analytics;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAnalytics();
+  }
+
+  Future<void> fetchAnalytics() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final data = await analyticsService.fetchAnalytics();
+
+      setState(() {
+        analytics = data;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Widget buildDashboardCard({
+    required String title,
+    required IconData icon,
+    required String value,
+    Color? iconColor,
+    Color? backgroundColor,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor:
+                iconColor?.withOpacity(0.15) ?? Colors.blue.shade100,
+            child: Icon(icon, size: 32, color: iconColor ?? Colors.blue),
+          ),
+          SizedBox(height: 16),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    print("storage/${authService.globalUser?.image}");
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -32,14 +116,11 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
         automaticallyImplyLeading: false,
-
         actions: [
           Builder(
             builder:
                 (context) => GestureDetector(
-                  onTap: () {
-                    Scaffold.of(context).openDrawer();
-                  },
+                  onTap: () => Scaffold.of(context).openDrawer(),
                   child: Container(
                     margin: EdgeInsets.only(right: 15),
                     padding: EdgeInsets.all(10),
@@ -55,12 +136,13 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       drawer: MyDrawer(authService: authService),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
             horizontal: screenWidth * 0.05,
             vertical: screenHeight * 0.02,
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 30),
               Center(
@@ -71,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 90,
                       child:
                           authService.globalUser?.image != null
-                              ? isLoading.value
+                              ? isLoading
                                   ? CircularProgressIndicator(
                                     color: Theme.of(context).primaryColor,
                                   )
@@ -90,16 +172,18 @@ class _ProfilePageState extends State<ProfilePage> {
               SizedBox(height: 10),
               Text(
                 authService.globalUser!.name,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
                 authService.globalUser!.email,
+                textAlign: TextAlign.center,
                 style: TextStyle(color: Color.fromARGB(255, 41, 40, 40)),
               ),
               SizedBox(height: 30),
               Container(
                 height: 40,
-                width: 250,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(20),
@@ -127,7 +211,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             color:
                                 selectedTab == 0
                                     ? Colors.black
-                                    : const Color.fromARGB(255, 81, 81, 81),
+                                    : Colors.grey.shade800,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -153,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             color:
                                 selectedTab == 1
                                     ? Colors.black
-                                    : const Color.fromARGB(255, 81, 81, 81),
+                                    : Colors.grey.shade800,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -162,10 +246,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              SizedBox(height: 80),
+              SizedBox(height: 30),
               selectedTab == 0
                   ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 50,
+                    ),
                     child: Column(
                       children: [
                         ElevatedButton.icon(
@@ -194,14 +281,66 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   )
-                  : Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        "No analytics available",
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                  : isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : errorMessage != null
+                  ? Center(child: Text(errorMessage!))
+                  : analytics == null
+                  ? Center(child: Text("No analytics available"))
+                  : GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    mainAxisSpacing: 20,
+                    crossAxisSpacing: 20,
+                    childAspectRatio: 1.1,
+                    children: [
+                      buildDashboardCard(
+                        title: "Total Listings",
+                        icon: Icons.home,
+                        value: "${analytics!['total_listings'] ?? 0}",
+                        iconColor: Colors.blue,
                       ),
-                    ),
+                      buildDashboardCard(
+                        title: "Rent Listings",
+                        icon: Icons.key,
+                        value: "${analytics!['rent_listings'] ?? 0}",
+                        iconColor: Colors.orange,
+                      ),
+                      buildDashboardCard(
+                        title: "Sell Listings",
+                        icon: Icons.sell,
+                        value: "${analytics!['sell_listings'] ?? 0}",
+                        iconColor: Colors.green,
+                      ),
+                      buildDashboardCard(
+                        title: "Transactions",
+                        icon: Icons.receipt_long,
+                        value: "${analytics!['total_transactions'] ?? 0}",
+                        iconColor: Colors.purple,
+                      ),
+                      // buildDashboardCard(
+                      //   title: "Revenue",
+                      //   icon: Icons.attach_money,
+                      //   value:
+                      //       "\$${(analytics!['total_revenue'] ?? 0).toStringAsFixed(2)}",
+                      //   iconColor: Colors.teal,
+                      // ),
+                      buildDashboardCard(
+                        title: "Avg. Rating",
+                        icon: Icons.star_rate,
+                        value:
+                            "${(analytics!['average_rating'] ?? 0).toStringAsFixed(1)}",
+                        iconColor: Colors.amber,
+                      ),
+                      buildDashboardCard(
+                        title: "Reviews",
+                        icon: Icons.rate_review,
+                        value: "${analytics!['total_reviews'] ?? 0}",
+                        iconColor: Colors.redAccent,
+                      ),
+                    ],
                   ),
             ],
           ),

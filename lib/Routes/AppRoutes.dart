@@ -2,11 +2,14 @@ import 'package:reside_smart_flutter/Bindings/AddDiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/AddListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/DiscountBinding.dart';
 import 'package:reside_smart_flutter/Bindings/FavoritesBinding.dart';
+import 'package:reside_smart_flutter/Bindings/FilterBinding.dart';
 import 'package:reside_smart_flutter/Bindings/HomeBinding.dart';
+import 'package:reside_smart_flutter/Bindings/PurchaseListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SearchBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SignInBinding.dart';
 import 'package:reside_smart_flutter/Bindings/SignUpBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ForgetPasswordBinding.dart';
+import 'package:reside_smart_flutter/Bindings/TransactionsBinding.dart';
 import 'package:reside_smart_flutter/Bindings/UpdateListingBinding.dart';
 import 'package:reside_smart_flutter/Bindings/VerifyEmailBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ChangePasswordBinding.dart';
@@ -14,11 +17,15 @@ import 'package:reside_smart_flutter/Bindings/EditProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/CompleteProfileBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ListingsBinding.dart';
 import 'package:reside_smart_flutter/Bindings/ViewSingleListingBinding.dart';
+import 'package:reside_smart_flutter/Bindings/ViewSingleTranasctionBinding.dart';
 import 'package:reside_smart_flutter/Views/AddListingDiscount.dart';
+import 'package:reside_smart_flutter/Views/AddReviews.dart';
 import 'package:reside_smart_flutter/Views/Discount.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
 import 'package:reside_smart_flutter/Views/Landing.dart';
+import 'package:reside_smart_flutter/Views/ProfilePage.dart';
+import 'package:reside_smart_flutter/Views/PurchaseListing.dart';
 import 'package:reside_smart_flutter/Views/SignIn.dart';
 import 'package:reside_smart_flutter/Views/SignUp.dart';
 import 'package:reside_smart_flutter/Views/Splash.dart';
@@ -28,11 +35,15 @@ import 'package:reside_smart_flutter/Views/ChangePassword.dart';
 import 'package:reside_smart_flutter/Views/ListingsPage.dart';
 import 'package:reside_smart_flutter/Views/AddListing.dart';
 import 'package:reside_smart_flutter/Views/Completeprofile.dart';
+import 'package:reside_smart_flutter/Views/Transactions.dart';
+import 'package:reside_smart_flutter/Views/ViewAllReviews.dart';
 import 'package:reside_smart_flutter/Views/ViewSingleListing.dart';
 
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Views/UpdateListing.dart';
 import 'package:reside_smart_flutter/Views/VerifyEmail.dart';
+import 'package:reside_smart_flutter/Views/ViewSingleTransaction.dart';
+import 'package:reside_smart_flutter/Views/filterPage.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -53,6 +64,12 @@ class AppRoutes {
   static const String viewSingleListing = '/view-Single-listing';
   static const String discount = '/discount';
   static const String addDiscount = '/add-discount';
+  static const String purchaseListing = '/purchase-listing';
+  static const String transactions = '/transactions';
+  static const String viewSingleTransaction = '/view-single-transactions';
+  static const String addReview = '/add-review';
+  static const String viewReviews = '/view-review';
+  static const String filter = '/filter';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -120,5 +137,23 @@ class AppRoutes {
       page: () => AddDiscountPage(),
       binding: AddDiscountBinding(),
     ),
+    GetPage(
+      name: purchaseListing,
+      page: () => PurchaseListing(),
+      binding: PurchaseListingBinding(),
+    ),
+    GetPage(
+      name: transactions,
+      page: () => TransactionsPage(),
+      binding: TransactionsBinding(),
+    ),
+    GetPage(
+      name: viewSingleTransaction,
+      page: () => ViewSingleTransaction(),
+      binding: ViewSingleTranasctionBinding(),
+    ),
+    GetPage(name: addReview, page: () => AddReviews()),
+    GetPage(name: viewReviews, page: () => ViewAllReviews()),
+    GetPage(name: filter, page: () => FilterPage(), binding: FilterBinding()),
   ];
 }
