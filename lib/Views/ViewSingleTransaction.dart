@@ -5,7 +5,7 @@ import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Services/TransactionService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
-import 'package:reside_smart_flutter/Widgets/MyTransactionCard.dart';
+import 'package:reside_smart_flutter/Widgets/TransactionCardWidget.dart';
 
 class ViewSingleTransaction extends StatefulWidget {
   const ViewSingleTransaction({super.key});
@@ -36,11 +36,6 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
         if (transaction == null) {
           return Center(child: CircularProgressIndicator());
         }
-        print(transaction.listing!.user!.name);
-        print(transaction.discountId);
-        print(transaction.listing!.rentalOptions);
-        print(transaction.listing);
-        print(transaction.rentalOptionId);
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -53,7 +48,8 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TransactionCard(
+                // Use the new widget with isClickable set to false
+                TransactionCardWidget(
                   id: transaction.id!,
                   image:
                       (transaction.listing!.images != null &&
@@ -68,7 +64,10 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
                   rentalOptions: transaction.listing!.rentalOptions ?? [],
                   selectedRentalOptionId: transaction.rentalOptionId,
                   discounts: transaction.listing!.discounts ?? [],
+                  quantity: transaction.quantity ?? 1, // Fixed this line
+                  isClickable: false,
                 ),
+
                 const SizedBox(height: 24),
 
                 const Text(

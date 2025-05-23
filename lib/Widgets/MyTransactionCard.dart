@@ -15,6 +15,7 @@ class TransactionCard extends StatelessWidget {
   final List<RentalOption>? rentalOptions;
   final int? selectedRentalOptionId;
   final List<ListingDiscountModel> discounts;
+  final int quantity; // Add quantity field
 
   const TransactionCard({
     super.key,
@@ -28,6 +29,7 @@ class TransactionCard extends StatelessWidget {
     this.rentalOptions,
     this.selectedRentalOptionId,
     required this.discounts,
+    this.quantity = 1, // Add quantity parameter with default value
   });
 
   @override
@@ -62,21 +64,21 @@ class TransactionCard extends StatelessWidget {
       final activeDiscount = getActiveDiscountForSelectedOption();
 
       if (type == 'rent' && selectedOption != null) {
-        originalPrice = selectedOption.price;
+        originalPrice = selectedOption.price * quantity; // Multiply by quantity
         if (activeDiscount != null && activeDiscount.percentage != null) {
           double discounted =
               originalPrice -
               (originalPrice * (activeDiscount.percentage! / 100));
-          return '\$${discounted.toStringAsFixed(2)}/${selectedOption.duration} ${selectedOption.unit}';
+          return '\$${discounted.toStringAsFixed(2)} (${activeDiscount.percentage!}% off)';
         }
-        return '\$${originalPrice.toStringAsFixed(2)}/${selectedOption.duration} ${selectedOption.unit}';
+        return '\$${originalPrice.toStringAsFixed(2)} × $quantity ${selectedOption.unit}';
       } else {
         originalPrice = double.tryParse(price) ?? 0.0;
         if (activeDiscount != null && activeDiscount.percentage != null) {
           double discounted =
               originalPrice -
               (originalPrice * (activeDiscount.percentage! / 100));
-          return '\$${discounted.toStringAsFixed(2)}';
+          return '\$${discounted.toStringAsFixed(2)} (${activeDiscount.percentage!}% off)';
         }
         return '\$${originalPrice.toStringAsFixed(2)}';
       }

@@ -22,6 +22,7 @@ class PurchaseListingController extends GetxController {
     required int sellerId,
     int? discountId,
     int? rentalOptionId,
+    int quantity = 1, // Include quantity parameter with default
   }) async {
     try {
       isLoading.value = true;
@@ -40,6 +41,7 @@ class PurchaseListingController extends GetxController {
         'seller_id': sellerId,
         if (discountId != null) 'discount_id': discountId,
         if (rentalOptionId != null) 'rental_option_id': rentalOptionId,
+        'quantity': quantity, // Include quantity in form data
       });
 
       await transactionService.purchaseListing(formData: formData);

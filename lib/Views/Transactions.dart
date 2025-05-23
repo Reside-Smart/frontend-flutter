@@ -4,6 +4,7 @@ import 'package:reside_smart_flutter/Controllers/TransactionsController.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Widgets/InOutTransactionCard.dart';
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
+import 'package:reside_smart_flutter/Widgets/TransactionCardWidget.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -162,13 +163,35 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                                       .images!
                                                       .first
                                                   : '';
-                                          return InOutTransactionCard(
+                                          return TransactionCardWidget(
                                             id: tx.id!,
                                             image: image,
                                             name:
                                                 matchingListing?.name ??
                                                 'no title',
-                                            transactionType: tx.type ?? '',
+                                            price:
+                                                matchingListing?.price
+                                                    ?.toString() ??
+                                                '',
+                                            rating:
+                                                matchingListing?.averageReviews
+                                                    ?.toString() ??
+                                                '',
+                                            location:
+                                                matchingListing?.address ??
+                                                'No address',
+                                            type: tx.type ?? '',
+                                            rentalOptions:
+                                                matchingListing
+                                                    ?.rentalOptions ??
+                                                [],
+                                            selectedRentalOptionId:
+                                                tx.rentalOptionId,
+                                            discounts:
+                                                matchingListing?.discounts ??
+                                                [],
+                                            quantity: tx.quantity ?? 1,
+                                            isClickable: true,
                                           );
                                         }).toList(),
                                   ),
@@ -195,13 +218,35 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                                       .images!
                                                       .first
                                                   : '';
-                                          return InOutTransactionCard(
+                                          return TransactionCardWidget(
                                             id: tx.id!,
                                             image: image,
                                             name:
                                                 matchingListing?.name ??
                                                 'no title',
-                                            transactionType: tx.type ?? '',
+                                            price:
+                                                matchingListing?.price
+                                                    ?.toString() ??
+                                                '',
+                                            rating:
+                                                matchingListing?.averageReviews
+                                                    ?.toString() ??
+                                                '',
+                                            location:
+                                                matchingListing?.address ??
+                                                'No address',
+                                            type: tx.type ?? '',
+                                            rentalOptions:
+                                                matchingListing
+                                                    ?.rentalOptions ??
+                                                [],
+                                            selectedRentalOptionId:
+                                                tx.rentalOptionId,
+                                            discounts:
+                                                matchingListing?.discounts ??
+                                                [],
+                                            quantity: tx.quantity ?? 1,
+                                            isClickable: true,
                                           );
                                         }).toList(),
                                   ),

@@ -86,6 +86,7 @@ class _SearchPageState extends State<SearchPage> {
                       searchController.search();
                     },
                     side: BorderSide.none,
+                    selectedColor: (cs.primary),
                   ),
                   const SizedBox(width: 8),
                   ...searchController.categories.map((cat) {
@@ -101,6 +102,7 @@ class _SearchPageState extends State<SearchPage> {
                           searchController.search();
                         },
                         side: BorderSide.none,
+                        selectedColor: (cs.primary),
                       ),
                     );
                   }).toList(),
