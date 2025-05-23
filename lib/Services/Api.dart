@@ -24,11 +24,12 @@ class Api {
           var token = await GetStorage().read('login_token');
 
           var headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
+            'Accept': 'application/json',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Charset': 'utf-8',
             "Authorization": "Bearer ${token}",
             'Connection': 'Keep-Alive',
-            'Accept-Encoding': 'gzip, deflate, br',
+            // 'Accept-Encoding': 'gzip, deflate, br',
           };
 
           request.headers.addAll(headers);
