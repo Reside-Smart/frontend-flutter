@@ -25,6 +25,8 @@ class AddListingController extends GetxController {
     List<FeatureField>? features,
     String? description,
     List<RentingOption>? rental_options,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       isLoading.value = true;
@@ -76,6 +78,8 @@ class AddListingController extends GetxController {
                   contentType: MediaType('application', 'json'),
                 )
                 : null,
+        'latitude': latitude,
+        'longitude': longitude,
       });
 
       await _listingservice.saveAsDraft(formData: formData);
@@ -99,6 +103,8 @@ class AddListingController extends GetxController {
     required List<FeatureField>? features,
     required String? description,
     required List<RentingOption>? rental_options,
+    required double? latitude,
+    required double? longitude,
   }) async {
     try {
       isLoading.value = true;
@@ -149,8 +155,11 @@ class AddListingController extends GetxController {
                   contentType: MediaType('application', 'json'),
                 )
                 : null,
+        'latitude': latitude,
+        'longitude': longitude,
       });
 
+      print('Latitude: $latitude, Longitude: $longitude');
       await _listingservice.saveAsPublished(formData: formData);
 
       AppDialog.showSuccess('Listing published successfully');

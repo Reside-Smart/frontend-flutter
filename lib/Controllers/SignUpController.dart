@@ -1,12 +1,15 @@
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Models/UserModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 
 class SignUpController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
   final RxBool isLoading = false.obs;
   var fieldErrors = <String, String>{}.obs;
+  // Track registration status
+  final RxBool registrationComplete = false.obs;
 
   Future<void> registerUser(
     String name,
@@ -19,6 +22,13 @@ class SignUpController extends GetxController {
       isLoading.value = true;
       fieldErrors.value = {};
 
+      // Validate password confirmation before making API call
+      if (password != passwordConfirmation) {
+        fieldErrors['password_confirmation'] = 'Passwords do not match';
+        isLoading.value = false;
+        return;
+      }
+
       final UserModel user = await _authService.register(
         name: name,
         email: email,
@@ -27,8 +37,11 @@ class SignUpController extends GetxController {
       );
 
       _authService.globalUser = user;
-      print(_authService.globalUser);
-      Get.toNamed('/verifyEmail');
+      registrationComplete.value = true;
+      AppDialog.showSuccess(
+        "Registration successful! Please verify your email.",
+      );
+      Get.offAllNamed('/verifyEmail');
     } catch (e) {
       _handleError(e);
     } finally {
@@ -37,14 +50,22 @@ class SignUpController extends GetxController {
   }
 
   void _handleError(e) {
-    if (e.response?.statusCode == 422) {
-      final errors = e.response?.data['errors'] as Map<String, dynamic>;
-      errors.forEach((key, value) {
-        fieldErrors[key] = value[0];
-      });
-    } else {
+    try {
+      if (e.response?.statusCode == 422) {
+        final errors = e.response?.data['errors'] as Map<String, dynamic>;
+        errors.forEach((key, value) {
+          fieldErrors[key] = value[0];
+        });
+      } else {
+        fieldErrors['general'] =
+            e.response?.data['message'] ??
+            'An error occurred during registration. Please try again.';
+        AppDialog.showError(fieldErrors['general'] ?? 'Registration failed');
+      }
+    } catch (_) {
       fieldErrors['general'] =
-          e.response?.data['message'] ?? 'An error occurred';
+          'Unexpected error occurred. Please check your connection.';
+      AppDialog.showError(fieldErrors['general'] ?? 'Registration failed');
     }
   }
 }

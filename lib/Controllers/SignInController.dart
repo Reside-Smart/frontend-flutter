@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Models/UserModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 
 class SignInController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -19,24 +20,45 @@ class SignInController extends GetxController {
       );
 
       _authService.globalUser = user;
-      print(_authService.globalUser);
       Get.offAllNamed('/navbar');
     } catch (e) {
-      _handleError(e);
+      _handleError(e, email);
     } finally {
       isLoading.value = false;
     }
   }
 
-  void _handleError(e) {
-    if (e.response?.statusCode == 422) {
-      final errors = e.response?.data['errors'] as Map<String, dynamic>;
-      errors.forEach((key, value) {
-        fieldErrors[key] = value[0];
-      });
-    } else {
+  void _handleError(e, String email) {
+    try {
+      // Check for unverified user (status code 403 with verified=false)
+      if (e.response?.statusCode == 403 &&
+          e.response?.data['verified'] == false) {
+        // Store email in AuthService for the verification flow
+        _authService.globalUser = UserModel(
+          id: 0,
+          name: '',
+          email: email,
+          phoneNumber: '',
+          token: '',
+        );
+
+        Get.offAllNamed('/verifyEmail');
+        return;
+      }
+
+      // Regular error handling
+      if (e.response?.statusCode == 422) {
+        final errors = e.response?.data['errors'] as Map<String, dynamic>;
+        errors.forEach((key, value) {
+          fieldErrors[key] = value[0];
+        });
+      } else {
+        fieldErrors['general'] =
+            e.response?.data['message'] ?? 'An error occurred';
+      }
+    } catch (_) {
       fieldErrors['general'] =
-          e.response?.data['message'] ?? 'An error occurred';
+          'Unexpected error occurred. Please check your connection.';
     }
   }
 }

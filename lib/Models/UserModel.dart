@@ -5,6 +5,8 @@ class UserModel {
   String phoneNumber;
   String? image;
   String? address;
+  double? latitude;
+  double? longitude;
   final String? token;
 
   UserModel({
@@ -14,6 +16,8 @@ class UserModel {
     required this.phoneNumber,
     this.image,
     this.address,
+    this.latitude,
+    this.longitude,
     this.token,
   });
 
@@ -25,6 +29,14 @@ class UserModel {
       phoneNumber: json['phone_number'],
       image: json['image']?.toString(),
       address: json['address']?.toString(),
+      latitude:
+          json['latitude'] != null
+              ? double.tryParse(json['latitude'].toString())
+              : null,
+      longitude:
+          json['longitude'] != null
+              ? double.tryParse(json['longitude'].toString())
+              : null,
       token: json['token']?.toString(),
     );
   }
@@ -37,11 +49,13 @@ class UserModel {
       'phoneNumber': phoneNumber,
       'image': image,
       'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
   @override
   String toString() {
-    return 'UserModel{name: $name,phoneNumberL $phoneNumber , email: $email , image: $image, address: $address}';
+    return 'UserModel{name: $name, phoneNumber: $phoneNumber, email: $email, image: $image, address: $address, latitude: $latitude, longitude: $longitude}';
   }
 }

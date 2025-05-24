@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Models/UserModel.dart';
@@ -12,24 +13,41 @@ class EditProfileController extends GetxController {
   var fieldErrors = <String, String>{}.obs;
 
   XFile? image;
+  final Rx<LatLng> selectedLocation =
+      LatLng(33.8547, 35.8623).obs; // Default to Lebanon
 
   final ImagePicker picker = ImagePicker();
+
+  void initLocation() {
+    if (authService.globalUser?.latitude != null &&
+        authService.globalUser?.longitude != null) {
+      selectedLocation.value = LatLng(
+        authService.globalUser!.latitude!,
+        authService.globalUser!.longitude!,
+      );
+    }
+  }
 
   Future<void> editProfile({
     required String name,
     required String phoneNumber,
     required String email,
     required String address,
+    required double latitude,
+    required double longitude,
   }) async {
     try {
       isLoading.value = true;
       fieldErrors.clear();
 
+      print(' Phone Number in EditProfileController: $phoneNumber');
       final form = dio.FormData.fromMap({
         'name': name,
-        'phoneNumber': phoneNumber,
+        'phone_number': phoneNumber,
         'email': email,
         'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
         if (image != null)
           'image': await dio.MultipartFile.fromFile(
             image!.path,
@@ -42,6 +60,8 @@ class EditProfileController extends GetxController {
       authService.globalUser?.email = user.email;
       authService.globalUser?.phoneNumber = user.phoneNumber;
       authService.globalUser?.address = user.address;
+      authService.globalUser?.latitude = user.latitude;
+      authService.globalUser?.longitude = user.longitude;
       authService.globalUser?.image = user.image;
 
       AppDialog.showSuccess("Profile updated successfully");

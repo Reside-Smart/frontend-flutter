@@ -15,7 +15,8 @@ class ListingModel {
   String? status;
   bool? isAvailable;
   double? averageReviews;
-  Map<String, dynamic>? location;
+  double? latitude;
+  double? longitude;
   final int? userId;
   final UserModel? user;
   List<RentalOption>? rentalOptions;
@@ -35,7 +36,8 @@ class ListingModel {
     this.status,
     this.isAvailable,
     this.averageReviews,
-    this.location,
+    this.latitude,
+    this.longitude,
     this.userId,
     this.rentalOptions,
     this.isFavorite = false,
@@ -59,7 +61,14 @@ class ListingModel {
       averageReviews:
           double.tryParse(json['average_reviews']?.toString() ?? '0.0') ?? 0.0,
 
-      location: Map<String, dynamic>.from(json['location'] ?? {}),
+      latitude:
+          json['latitude'] != null
+              ? double.tryParse(json['latitude'].toString())
+              : null,
+      longitude:
+          json['longitude'] != null
+              ? double.tryParse(json['longitude'].toString())
+              : null,
       userId: json['user_id'],
       rentalOptions:
           json['rental_options'] != null
@@ -92,7 +101,8 @@ class ListingModel {
       'status': status,
       'is_available': isAvailable != null ? (isAvailable! ? 1 : 0) : null,
       'average_reviews': averageReviews,
-      'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
       'user_id': userId,
       'renting_option': rentalOptions,
     };

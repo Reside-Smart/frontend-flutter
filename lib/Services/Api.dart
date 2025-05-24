@@ -6,7 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Api {
   static String get baseURL =>
-      dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8000';
   // static const String baseURL = "https://teal-hare-333948.hostingersite.com";
 
   static final dio = Dio(

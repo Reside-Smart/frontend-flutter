@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reside_smart_flutter/Controllers/CategoryController.dart';
 import 'package:reside_smart_flutter/Controllers/RentPriceController.dart';
@@ -28,6 +29,9 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+
+  LatLng selectedLocation = LatLng(33.2728, 35.2060);
+  Set<Marker> markers = {};
 
   final List<XFile> _images = [];
 
@@ -349,7 +353,71 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                       },
                     ),
                     SizedBox(height: 30),
-
+                    Text(
+                      "Location:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: selectedLocation,
+                            zoom: 14.0,
+                          ),
+                          markers: markers,
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: true,
+                          zoomControlsEnabled: true,
+                          mapToolbarEnabled: true,
+                          onTap: (LatLng position) {
+                            setState(() {
+                              selectedLocation = position;
+                              markers = {
+                                Marker(
+                                  markerId: MarkerId('property_location'),
+                                  position: position,
+                                  infoWindow: InfoWindow(
+                                    title:
+                                        nameController.text.isEmpty
+                                            ? 'Property Location'
+                                            : nameController.text,
+                                  ),
+                                ),
+                              };
+                            });
+                          },
+                          onMapCreated: (GoogleMapController controller) {
+                            // Initialize the marker at the default location
+                            setState(() {
+                              markers = {
+                                Marker(
+                                  markerId: MarkerId('property_location'),
+                                  position: selectedLocation,
+                                  infoWindow: InfoWindow(
+                                    title: 'Property Location',
+                                  ),
+                                ),
+                              };
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Tap on the map to set the property location',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 8),
                     // Images
                     Text(
                       "Add Images:",
@@ -564,6 +632,8 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                               category: selectedCategory,
                               features: featureController.features,
                               rental_options: rentPriceController.rentOptions,
+                              latitude: selectedLocation.latitude,
+                              longitude: selectedLocation.longitude,
                             );
                           },
 
@@ -618,6 +688,8 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                 category: selectedCategory,
                                 features: featureController.features,
                                 rental_options: rentPriceController.rentOptions,
+                                latitude: selectedLocation.latitude,
+                                longitude: selectedLocation.longitude,
                               );
                             }
                           },

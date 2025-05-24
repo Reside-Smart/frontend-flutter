@@ -46,6 +46,7 @@ dependencies:
   url_launcher: any
   fl_chart: ^1.0.0
   flutter_dotenv: ^5.2.1
+  google_maps_flutter: any
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
   assets:
     - images/
     - .env
+    - .env.production
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

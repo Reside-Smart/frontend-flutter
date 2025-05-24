@@ -5,6 +5,7 @@ import 'package:reside_smart_flutter/Controllers/CompleteProfileController.dart'
 import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Completeprofile extends StatefulWidget {
   const Completeprofile({super.key});
@@ -20,6 +21,9 @@ class _CompleteprofileState extends State<Completeprofile>
   final formKey = GlobalKey<FormState>();
   late final TextEditingController addressController = TextEditingController();
 
+  Set<Marker> markers = {};
+  GoogleMapController? mapController;
+
   Future<void> _pickImage() async {
     try {
       final pickedFile = await completeProfileController.picker.pickImage(
@@ -32,6 +36,20 @@ class _CompleteprofileState extends State<Completeprofile>
     } catch (e) {
       print(e);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize markers
+    markers = {
+      Marker(
+        markerId: MarkerId('user_location'),
+        position: completeProfileController.selectedLocation.value,
+        infoWindow: InfoWindow(title: 'Your Location'),
+      ),
+    };
   }
 
   @override
@@ -124,6 +142,65 @@ class _CompleteprofileState extends State<Completeprofile>
                       },
                     ),
 
+                    SizedBox(height: screenHeight * 0.03),
+                    Text(
+                      "Location:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Obx(
+                          () => GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target:
+                                  completeProfileController
+                                      .selectedLocation
+                                      .value,
+                              zoom: 14.0,
+                            ),
+                            markers: markers,
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            zoomControlsEnabled: true,
+                            mapToolbarEnabled: true,
+                            onTap: (LatLng position) {
+                              setState(() {
+                                completeProfileController
+                                    .selectedLocation
+                                    .value = position;
+                                markers = {
+                                  Marker(
+                                    markerId: MarkerId('user_location'),
+                                    position: position,
+                                    infoWindow: InfoWindow(
+                                      title: 'Your Location',
+                                    ),
+                                  ),
+                                };
+                              });
+                            },
+                            onMapCreated: (GoogleMapController controller) {
+                              mapController = controller;
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Tap on the map to set your location',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+
                     SizedBox(height: screenHeight * 0.06),
 
                     // ✅ Submit Button
@@ -133,6 +210,16 @@ class _CompleteprofileState extends State<Completeprofile>
                             formKey.currentState!.validate()) {
                           completeProfileController.completeprofile(
                             address: addressController.text.trim(),
+                            latitude:
+                                completeProfileController
+                                    .selectedLocation
+                                    .value
+                                    .latitude,
+                            longitude:
+                                completeProfileController
+                                    .selectedLocation
+                                    .value
+                                    .longitude,
                           );
                         }
                       },

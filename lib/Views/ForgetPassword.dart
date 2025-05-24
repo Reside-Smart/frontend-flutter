@@ -111,7 +111,14 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            if (!_forgetPasswordController.isLoading.value &&
+                                formKey.currentState!.validate()) {
+                              _forgetPasswordController.forgetPassword(
+                                email: emailController.text.trim(),
+                              );
+                            }
+                          },
                           child: Text("Resend."),
                         ),
                       ],

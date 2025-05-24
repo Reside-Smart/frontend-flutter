@@ -140,15 +140,30 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          onPressed: () {
-                            if (!_verifyEmailController.isLoading.value &&
-                                formKey.currentState!.validate()) {
-                              _verifyEmailController.veriyfEmailUser(
-                                otpController.text.trim(),
-                              );
-                            }
-                          },
-                          child: Text("Resend."),
+                          onPressed:
+                              _verifyEmailController.resendCooldown.value > 0
+                                  ? null
+                                  : () =>
+                                      _verifyEmailController
+                                          .resendVerificationCode(),
+                          child: Obx(
+                            () => Text(
+                              _verifyEmailController.resendCooldown.value > 0
+                                  ? "Resend in ${_verifyEmailController.resendCooldown.value}s"
+                                  : "Resend",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color:
+                                    _verifyEmailController
+                                                .resendCooldown
+                                                .value >
+                                            0
+                                        ? Colors.grey
+                                        : Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),

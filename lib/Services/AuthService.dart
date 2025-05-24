@@ -57,12 +57,8 @@ class AuthService extends GetxService {
       },
     );
 
-    final UserModel user = UserModel.fromJson({
-      ...response.data['user'],
-      'token': response.data['token'],
-    });
+    final UserModel user = UserModel.fromJson(response.data['user']);
 
-    GetStorage().write('login_token', user.token);
     return user;
   }
 
@@ -92,10 +88,22 @@ class AuthService extends GetxService {
     return user;
   }
 
-  Future<bool> verifyEmail({required String email, required String otp}) async {
-    await Api.dio.post('/email/verify', data: {'email': email, 'otp': otp});
+  Future<UserModel> verifyEmail({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await Api.dio.post(
+      '/email/verify',
+      data: {'email': email, 'otp': otp},
+    );
 
-    return true;
+    final UserModel user = UserModel.fromJson({
+      ...response.data['user'],
+      'token': response.data['token'],
+    });
+
+    GetStorage().write('login_token', user.token);
+    return user;
   }
 
   Future<void> logout() async {
@@ -148,5 +156,15 @@ class AuthService extends GetxService {
     final UserModel user = UserModel.fromJson({...response.data['user']});
 
     return user;
+  }
+
+  // Add a new method to handle session expiration
+
+  Future<void> handleSessionExpiration() async {
+    await GetStorage().remove('login_token');
+    isLoggedIn.value = false;
+    globalUser = null;
+    AppDialog.showError("Your session has expired. Please sign in again.");
+    Get.offAllNamed('/signIn');
   }
 }

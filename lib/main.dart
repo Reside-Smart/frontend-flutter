@@ -9,7 +9,9 @@ import 'Routes/AppRoutes.dart';
 
 void main() async {
   await GetStorage.init();
-  await dotenv.load(fileName: ".env");
+  const String envFile = String.fromEnvironment('ENV', defaultValue: '.env');
+  await dotenv.load(fileName: envFile);
+
   Api.initializeInterceptors();
   runApp(MyApp());
 }

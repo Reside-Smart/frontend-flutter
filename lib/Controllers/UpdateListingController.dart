@@ -92,6 +92,8 @@ class UpdateListingController extends GetxController {
     List<FeatureField>? features,
     String? description,
     List<RentingOption>? rental_options,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       isLoading.value = true;
@@ -146,6 +148,8 @@ class UpdateListingController extends GetxController {
                   contentType: MediaType('application', 'json'),
                 )
                 : null,
+        'latitude': latitude,
+        'longitude': longitude,
       });
 
       await _listingservice.updateAsDraft(
@@ -169,6 +173,8 @@ class UpdateListingController extends GetxController {
     required List<FeatureField>? features,
     required String? description,
     required List<RentingOption>? rental_options,
+    required double? latitude,
+    required double? longitude,
   }) async {
     try {
       isLoading.value = true;
@@ -223,6 +229,8 @@ class UpdateListingController extends GetxController {
                   contentType: MediaType('application', 'json'),
                 )
                 : null,
+        'latitude': latitude,
+        'longitude': longitude,
       });
 
       await _listingservice.updateAsPublished(

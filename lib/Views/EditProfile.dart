@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -25,6 +26,9 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
       TextEditingController();
   late final TextEditingController emailController = TextEditingController();
   late final TextEditingController addressController = TextEditingController();
+
+  Set<Marker> markers = {};
+  GoogleMapController? mapController;
 
   Future<void> _pickImage() async {
     try {
@@ -48,7 +52,19 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
         editProfileController.authService.globalUser!.phoneNumber;
     emailController.text = editProfileController.authService.globalUser!.email;
     addressController.text =
-        editProfileController.authService.globalUser!.address!;
+        editProfileController.authService.globalUser!.address ?? '';
+
+    // Initialize location from user data
+    editProfileController.initLocation();
+
+    // Initialize markers
+    markers = {
+      Marker(
+        markerId: MarkerId('user_location'),
+        position: editProfileController.selectedLocation.value,
+        infoWindow: InfoWindow(title: 'Your Location'),
+      ),
+    };
   }
 
   @override
@@ -199,15 +215,98 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
                     ),
                     SizedBox(height: screenHeight * 0.03),
 
+                    Text(
+                      "Location:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Obx(
+                          () => GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target:
+                                  editProfileController.selectedLocation.value,
+                              zoom: 14.0,
+                            ),
+                            markers: markers,
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            zoomControlsEnabled: true,
+                            mapToolbarEnabled: true,
+                            onTap: (LatLng position) {
+                              setState(() {
+                                editProfileController.selectedLocation.value =
+                                    position;
+                                markers = {
+                                  Marker(
+                                    markerId: MarkerId('user_location'),
+                                    position: position,
+                                    infoWindow: InfoWindow(
+                                      title:
+                                          nameController.text.isEmpty
+                                              ? 'Your Location'
+                                              : nameController.text,
+                                    ),
+                                  ),
+                                };
+                              });
+                            },
+                            onMapCreated: (GoogleMapController controller) {
+                              mapController = controller;
+                              controller.animateCamera(
+                                CameraUpdate.newCameraPosition(
+                                  CameraPosition(
+                                    target:
+                                        editProfileController
+                                            .selectedLocation
+                                            .value,
+                                    zoom: 14.0,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Tap on the map to set your location',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.03),
                     ElevatedButton(
                       onPressed: () async {
                         if (!editProfileController.isLoading.value &&
                             formKey.currentState!.validate()) {
+                          print(
+                            'Phone Number: ${phoneNumberController.text.trim()}',
+                          );
                           await editProfileController.editProfile(
                             name: nameController.text.trim(),
                             phoneNumber: phoneNumberController.text.trim(),
                             email: emailController.text.trim(),
                             address: addressController.text.trim(),
+                            latitude:
+                                editProfileController
+                                    .selectedLocation
+                                    .value
+                                    .latitude,
+                            longitude:
+                                editProfileController
+                                    .selectedLocation
+                                    .value
+                                    .longitude,
                           );
                           setState(() {});
                         }

@@ -7,6 +7,7 @@ import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Views/ListingAllImages.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ViewSinglelisting extends StatefulWidget {
   const ViewSinglelisting({super.key});
@@ -518,50 +519,46 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                       ),
                     ),
                     SizedBox(height: 12),
+                    // Replace the Container on line 520 with this Google Maps implementation
                     Container(
-                      height: 150,
+                      height: 200,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(12),
-                        // image: DecorationImage(
-                        //   image: AssetImage('assets/map_placeholder.png'),
-                        //   fit: BoxFit.cover,
-                        // ),
                       ),
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(
+                              listing.latitude ??
+                                  33.8547, // Default to Lebanon if null
+                              listing.longitude ?? 35.8623,
+                            ),
+                            zoom: 14.0,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black12, blurRadius: 6),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: Colors.red,
+                          markers: {
+                            Marker(
+                              markerId: MarkerId('property_location'),
+                              position: LatLng(
+                                listing.latitude ?? 33.8547,
+                                listing.longitude ?? 35.8623,
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                '2.5 km from your location',
-                                style: TextStyle(fontSize: 12),
+                              infoWindow: InfoWindow(
+                                title: listing.name ?? 'Property Location',
                               ),
-                            ],
-                          ),
+                            ),
+                          },
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: true,
+                          zoomControlsEnabled: true,
+                          mapToolbarEnabled: true,
+                          onTap: (LatLng position) {},
                         ),
                       ),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'St. Clokilo Timur, Koc. Pancoian, Jakarta\nSclatan, Indonesia 18770',
+                      'Tap on the map to view the location in Google Maps.',
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
 
