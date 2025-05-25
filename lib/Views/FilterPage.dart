@@ -24,7 +24,6 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   double _formatPrice(double price) {
-    // Add your custom formatting logic here if needed
     return price;
   }
 

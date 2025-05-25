@@ -21,6 +21,40 @@ class HomeController extends GetxController {
   var fieldErrors = <String, String>{}.obs;
   int selectedCategory = 0;
 
+  final RxBool isTopLocationsLoading = false.obs;
+  final RxList<dynamic> topLocations = <dynamic>[].obs;
+
+  final RxBool isTopAgentsLoading = false.obs;
+  final RxList<dynamic> topAgents = <dynamic>[].obs;
+
+  Future<void> getTopAgents() async {
+    if (isTopAgentsLoading.value) return;
+    try {
+      isTopAgentsLoading(true);
+      final response = await _listingservice.getTopAgents();
+      topAgents.assignAll(response);
+      print('Top Agents Length: ${topAgents.length}');
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      isTopAgentsLoading(false);
+    }
+  }
+
+  Future<void> getTopLocations() async {
+    if (isTopLocationsLoading.value) return;
+    try {
+      isTopLocationsLoading.value = true;
+      final response = await _listingservice.getTopLocations();
+      topLocations.assignAll(response);
+      print('Top Locations Length: ${topLocations.length}');
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      isTopLocationsLoading.value = false;
+    }
+  }
+
   Future<void> getNearbyEstates() async {
     if (isNearbyEstatesLoading.value) return;
     try {
