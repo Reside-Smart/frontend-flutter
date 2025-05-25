@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:reside_smart_flutter/Bindings/GlobalBinding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,14 @@ void main() async {
   await dotenv.load(fileName: envFile);
 
   Api.initializeInterceptors();
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Stripe
+  Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? '';
+  // Stripe.merchantIdentifier = 'merchant.com.residesmart'; // For Apple Pay
+  await Stripe.instance.applySettings();
+
   runApp(MyApp());
 }
 
