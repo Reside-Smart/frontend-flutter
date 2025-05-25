@@ -303,4 +303,34 @@ class ListingService extends GetxService {
       print('Error deleting discount: $e');
     }
   }
+
+  Future<List<dynamic>> getTopLocations() async {
+    try {
+      final response = await Api.dio.get('/top-locations');
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('Failed to fetch top locations');
+      }
+    } catch (e) {
+      print('Error fetching top locations: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getTopAgents() async {
+    try {
+      final response = await Api.dio.get('/top-agents');
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('Failed to fetch top agents');
+      }
+    } catch (e) {
+      print('Error fetching top agents: $e');
+      rethrow;
+    }
+  }
 }

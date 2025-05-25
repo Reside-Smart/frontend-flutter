@@ -6,9 +6,11 @@ import 'package:reside_smart_flutter/Models/ListingDiscountModel.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
+import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Widgets/MyDrawer.dart';
 import 'package:reside_smart_flutter/Widgets/MyHomeListingCard.dart';
 import 'package:reside_smart_flutter/Widgets/MyNetworkImage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +22,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final HomeController _homeController = Get.find<HomeController>();
   final AuthService authService = Get.find<AuthService>();
+  Future<void> openWhatsApp(String phone) async {
+    try {
+      final whatsappUrl = Uri.parse(
+        'https://api.whatsapp.com/send?phone=$phone&text=Hello from Reside Smart',
+      );
+      print(whatsappUrl);
+      await launchUrl(whatsappUrl);
+    } catch (e) {
+      AppDialog.showError(e.toString());
+      print(e);
+    }
+  }
 
   @override
   void initState() {
@@ -27,6 +41,8 @@ class _HomePageState extends State<HomePage> {
     _homeController.getNearbyEstates();
     _homeController.getAllDiscounts();
     _homeController.getAllCategories();
+    _homeController.getTopLocations();
+    _homeController.getTopAgents();
   }
 
   @override
@@ -71,6 +87,8 @@ class _HomePageState extends State<HomePage> {
                 _homeController.getNearbyEstates();
                 _homeController.getAllDiscounts();
                 _homeController.getAllCategories();
+                _homeController.getTopLocations();
+                _homeController.getTopAgents();
               },
               child: ListView(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 32),
@@ -176,9 +194,244 @@ class _HomePageState extends State<HomePage> {
                     );
                   }),
                   const SizedBox(height: 32),
+                  Text(
+                    'Top Agents',
+                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Obx(() {
+                    if (_homeController.isTopAgentsLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (_homeController.topAgents.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No agents found',
+                          style: tt.bodyMedium?.copyWith(
+                            color: cs.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                      );
+                    }
+                    return SizedBox(
+                      height: 150,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        itemCount: _homeController.topAgents.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (ctx, index) {
+                          final agent = _homeController.topAgents[index];
+                          final avgReview =
+                              double.tryParse(
+                                agent['avg_review']?.toString() ?? '0',
+                              ) ??
+                              0;
+                          final roundedReview = avgReview.toStringAsFixed(1);
+
+                          return GestureDetector(
+                            onTap: () {
+                              openWhatsApp(agent['phone_number']);
+                            },
+                            child: Container(
+                              width: 140,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: cs.surfaceVariant.withOpacity(0.2),
+                                border: Border.all(
+                                  color: cs.outline.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: cs.primary.withOpacity(0.3),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: cs.primary.withOpacity(
+                                        0.1,
+                                      ),
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 24,
+                                        color: cs.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    agent['name'],
+                                    style: tt.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.apartment,
+                                        size: 14,
+                                        color: cs.onSurface.withOpacity(0.6),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${agent['listings_count']}',
+                                        style: tt.bodySmall?.copyWith(
+                                          color: cs.onSurface.withOpacity(0.6),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.star,
+                                        size: 14,
+                                        color: Colors.amber,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          roundedReview,
+                                          style: tt.bodySmall?.copyWith(
+                                            color: Colors.amber.shade700,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 24),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Popular Locations',
+                              style: tt.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+                      Obx(() {
+                        if (_homeController.isTopLocationsLoading.value) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        final validLocations =
+                            _homeController.topLocations.where((loc) {
+                              final name = loc['location_name'] as String?;
+                              return name != null && name.isNotEmpty;
+                            }).toList();
+
+                        if (validLocations.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'No locations available',
+                              style: tt.bodyMedium?.copyWith(
+                                color: cs.onSurface.withOpacity(0.5),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 80,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            itemCount: validLocations.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(width: 16),
+                            itemBuilder: (ctx, index) {
+                              final loc = validLocations[index];
+                              final locationName =
+                                  loc['location_name'] as String;
+                              final listingsCount =
+                                  loc['listings_count'] as int?;
+
+                              return Container(
+                                width: 160,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: cs.surfaceVariant.withOpacity(0.2),
+                                  border: Border.all(
+                                    color: cs.outline.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '📍$locationName',
+                                      style: tt.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (listingsCount != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '$listingsCount properties',
+                                        style: tt.bodySmall?.copyWith(
+                                          color: cs.onSurface.withOpacity(0.6),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
 
                   Text(
-                    'Explore Nearby Estates',
+                    'Explore Estates',
                     style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
