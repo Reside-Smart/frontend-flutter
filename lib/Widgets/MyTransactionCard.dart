@@ -15,7 +15,7 @@ class TransactionCard extends StatelessWidget {
   final List<RentalOption>? rentalOptions;
   final int? selectedRentalOptionId;
   final List<ListingDiscountModel> discounts;
-  final int quantity; // Add quantity field
+  final int quantity;
 
   const TransactionCard({
     super.key,
@@ -29,7 +29,7 @@ class TransactionCard extends StatelessWidget {
     this.rentalOptions,
     this.selectedRentalOptionId,
     required this.discounts,
-    this.quantity = 1, // Add quantity parameter with default value
+    this.quantity = 1,
   });
 
   @override
@@ -71,7 +71,7 @@ class TransactionCard extends StatelessWidget {
               (originalPrice * (activeDiscount.percentage! / 100));
           return '\$${discounted.toStringAsFixed(2)} (${activeDiscount.percentage!}% off)';
         }
-        return '\$${originalPrice.toStringAsFixed(2)} × $quantity ${selectedOption.unit}';
+        return '\$${originalPrice.toStringAsFixed(2)} × ${selectedOption.duration} ${selectedOption.unit}';
       } else {
         originalPrice = double.tryParse(price) ?? 0.0;
         if (activeDiscount != null && activeDiscount.percentage != null) {
@@ -98,9 +98,7 @@ class TransactionCard extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        // Get.toNamed('/view-Single-listing', arguments: {'id': id});
-      },
+      onTap: () {},
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         padding: const EdgeInsets.all(12),
