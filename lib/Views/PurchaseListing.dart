@@ -1,14 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+
+// Project-specific imports
 import 'package:reside_smart_flutter/Controllers/PurchaseListingController.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Services/TransactionService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
-import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Utils/GlobalFunctions.dart';
+import 'package:reside_smart_flutter/Widgets/MyMainAppBar.dart';
 import 'package:reside_smart_flutter/Widgets/MyTransactionCard.dart';
 
 class PurchaseListing extends StatefulWidget {
@@ -512,7 +515,6 @@ class _PurchaseListingState extends State<PurchaseListing>
 
                 SizedBox(height: 40),
 
-                // Purchase button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -531,88 +533,75 @@ class _PurchaseListingState extends State<PurchaseListing>
                           return;
                         }
 
-                        final start = DateTime.tryParse(
-                          startDateController.text,
-                        );
-                        final now = DateTime.now();
-                        if (start != null &&
-                            start.isBefore(
-                              DateTime(now.year, now.month, now.day),
-                            )) {
-                          AppDialog.showError(
-                            "Start date cannot be in the past.",
-                          );
-                          return;
-                        }
-
+                        // Get discount data
                         final rentalOption = listing.rentalOptions
                             ?.firstWhereOrNull(
                               (option) => option.id == selectedRentalOption,
                             );
 
-                        final double baseUnitPrice =
-                            rentalOption?.price ?? listing.price ?? 0.0;
+                        final discount = listing.discounts?.firstWhereOrNull(
+                          (d) =>
+                              d.status.toLowerCase() == 'active' &&
+                              (d.rentalOptionId == selectedRentalOption ||
+                                  d.rentalOptionId == null),
+                        );
 
-                        final double basePrice = baseUnitPrice * quantity.value;
-
-                        final discount = listing.discounts?.firstWhereOrNull((
-                          d,
-                        ) {
-                          final isActive = d.status == 'active';
-                          final matchRental =
-                              d.rentalOptionId == selectedRentalOption;
-                          final matchListing =
-                              d.listingId == listing.id &&
-                              d.rentalOptionId == null;
-                          return isActive && (matchRental || matchListing);
-                        });
-
-                        final double discountPercent =
-                            discount != null
-                                ? double.tryParse(
-                                      discount.percentage.toString(),
-                                    ) ??
-                                    0.0
-                                : 0.0;
-
-                        final double amountPaid =
-                            discountPercent > 0
-                                ? basePrice -
-                                    (basePrice * discountPercent / 100)
-                                : basePrice;
-
-                        final String paymentStatus =
-                            selectedMethod == 'cash' ? 'unpaid' : 'paid';
-
-                        final buyerId = Get.find<AuthService>().globalUser!.id;
-                        final sellerId = listing.userId;
-
-                        if (sellerId == null) {
-                          AppDialog.showError("Listing owner not found.");
-                          return;
+                        // Calculate price
+                        double baseUnitPrice = 0;
+                        if (listing.type == 'rent' && rentalOption != null) {
+                          baseUnitPrice = rentalOption.price;
+                        } else {
+                          baseUnitPrice = listing.price ?? 0;
                         }
 
-                        purchaseListingController.createTransaction(
-                          transactionType: listing.type!,
-                          totalPrice: basePrice,
-                          amountPaid: amountPaid,
-                          paymentMethod: selectedMethod,
-                          paymentStatus: paymentStatus,
-                          listingId: listing.id!,
-                          buyerId: buyerId,
-                          sellerId: sellerId,
-                          discountId: discount?.discountId,
-                          rentalOptionId: selectedRentalOption,
-                          quantity: quantity.value,
-                          checkInDate:
-                              listing.type == 'rent'
-                                  ? startDateController.text
-                                  : DateTime.now().toString().split(' ')[0],
-                          checkOutDate:
-                              listing.type == 'rent'
-                                  ? endDateController.text
-                                  : null,
-                        );
+                        final basePrice = baseUnitPrice * quantity.value;
+                        final discountPercent = discount?.percentage ?? 0;
+                        final discountAmount =
+                            basePrice * discountPercent / 100;
+                        final finalPrice = basePrice - discountAmount;
+
+                        // Handle payment based on selected method
+                        if (selectedMethod == 'stripe') {
+                          purchaseListingController.processDirectPayment(
+                            productName: listing.name ?? 'Property listing',
+                            amount: finalPrice,
+                            listingId: listing.id!,
+                            sellerId: listing.userId!,
+                            transactionType: listing.type!,
+                            discountId: discount?.discountId,
+                            rentalOptionId: selectedRentalOption,
+                            quantity: quantity.value,
+                            checkInDate:
+                                listing.type == 'rent'
+                                    ? startDateController.text
+                                    : null,
+                            checkOutDate:
+                                listing.type == 'rent'
+                                    ? endDateController.text
+                                    : null,
+                          );
+                        } else {
+                          // Cash payment (existing flow)
+                          purchaseListingController.createCashTransaction(
+                            transactionType: listing.type!,
+                            totalPrice: basePrice,
+                            amountPaid: finalPrice,
+                            listingId: listing.id!,
+                            buyerId: Get.find<AuthService>().globalUser!.id,
+                            sellerId: listing.userId!,
+                            discountId: discount?.discountId,
+                            rentalOptionId: selectedRentalOption,
+                            quantity: quantity.value,
+                            checkInDate:
+                                listing.type == 'rent'
+                                    ? startDateController.text
+                                    : null,
+                            checkOutDate:
+                                listing.type == 'rent'
+                                    ? endDateController.text
+                                    : null,
+                          );
+                        }
                       }
                     },
                     child: Text(
@@ -654,11 +643,12 @@ class _PurchaseListingState extends State<PurchaseListing>
     return RadioListTile<String>(
       title: Row(
         children: [
-          Icon(Icons.credit_card, color: Color(0xFF635BFF)),
+          Image.asset('images/stripe_logo.png', height: 24, width: 24),
           SizedBox(width: 8),
-          Text('Stripe'),
+          Text('Credit/Debit Card'),
         ],
       ),
+      subtitle: Text('Secure payment via Stripe'),
       value: 'stripe',
       groupValue: selectedMethod,
       onChanged: (value) {
