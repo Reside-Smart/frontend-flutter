@@ -13,7 +13,6 @@ class PurchaseListingController extends GetxController {
   final RxBool isLoading = false.obs;
   var fieldErrors = <String, String>{}.obs;
 
-  // Process the payment directly with Stripe
   Future<void> processDirectPayment({
     required String productName,
     required double amount,
@@ -32,7 +31,6 @@ class PurchaseListingController extends GetxController {
       final String email = authService.globalUser!.email;
       final int buyerId = authService.globalUser!.id;
 
-      // Make the payment directly with Stripe
       final paymentResult = await stripeService.makePayment(
         productName: productName,
         amount: amount,
@@ -62,7 +60,6 @@ class PurchaseListingController extends GetxController {
         await transactionService.purchaseListing(formData: formData);
 
         AppDialog.showSuccess('Payment successful');
-        Get.toNamed('/transactions');
       } else {
         AppDialog.showError(paymentResult.message);
       }
@@ -73,7 +70,6 @@ class PurchaseListingController extends GetxController {
     }
   }
 
-  // Original cash payment method (keep this)
   Future<void> createCashTransaction({
     required String transactionType,
     required double totalPrice,
@@ -108,9 +104,6 @@ class PurchaseListingController extends GetxController {
       });
 
       await transactionService.purchaseListing(formData: formData);
-
-      AppDialog.showSuccess('Transaction created successfully');
-      Get.offAllNamed('/transactions');
     } catch (e) {
       _handleError(e);
     } finally {

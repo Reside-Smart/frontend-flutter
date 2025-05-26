@@ -263,7 +263,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Dashboard header with view all button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

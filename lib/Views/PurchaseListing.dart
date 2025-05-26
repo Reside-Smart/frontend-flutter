@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 
-// Project-specific imports
 import 'package:reside_smart_flutter/Controllers/PurchaseListingController.dart';
 import 'package:reside_smart_flutter/Models/ListingModel.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
@@ -66,8 +65,8 @@ class _PurchaseListingState extends State<PurchaseListing>
 
     if (rentalOption == null) return startDate;
 
-    // If quantity is 1 and unit is day, return the same day
     if (quantityValue == 1 &&
+        rentalOption.duration == 1 &&
         (rentalOption.unit.toLowerCase().trim() == 'day' ||
             rentalOption.unit.toLowerCase().trim() == 'days')) {
       return startDate;
@@ -79,17 +78,12 @@ class _PurchaseListingState extends State<PurchaseListing>
     switch (unit) {
       case 'day':
       case 'days':
-        return startDate.add(
-          Duration(days: duration - 1),
-        ); // Subtract 1 to make end date inclusive
+        return startDate.add(Duration(days: duration - 1));
       case 'week':
       case 'weeks':
-        return startDate.add(
-          Duration(days: duration * 7 - 1),
-        ); // Subtract 1 to make end date inclusive
+        return startDate.add(Duration(days: duration * 7 - 1));
       case 'month':
       case 'months':
-        // Calculate months, then subtract 1 day to make it inclusive
         final endDate = DateTime(
           startDate.year,
           startDate.month + duration,
@@ -98,7 +92,6 @@ class _PurchaseListingState extends State<PurchaseListing>
         return endDate.subtract(Duration(days: 1));
       case 'year':
       case 'years':
-        // Calculate years, then subtract 1 day to make it inclusive
         final endDate = DateTime(
           startDate.year + duration,
           startDate.month,
@@ -106,9 +99,7 @@ class _PurchaseListingState extends State<PurchaseListing>
         );
         return endDate.subtract(Duration(days: 1));
       default:
-        return startDate.add(
-          Duration(days: duration - 1),
-        ); // Default to days, inclusive
+        return startDate.add(Duration(days: duration - 1));
     }
   }
 
@@ -122,7 +113,6 @@ class _PurchaseListingState extends State<PurchaseListing>
   }
 
   void _showDatePicker() async {
-    // Get rental option name for display
     final rentalOption = listing.rentalOptions?.firstWhere(
       (option) => option.id == selectedRentalOption,
     );
@@ -138,12 +128,10 @@ class _PurchaseListingState extends State<PurchaseListing>
     DateTime? pickedDate;
     DateTime initialDate = DateTime.now();
 
-    // Find the next available date
     while (isDateBooked(initialDate)) {
       initialDate = initialDate.add(const Duration(days: 1));
     }
 
-    // Show date picker dialog
     await showDialog(
       context: context,
       builder:
@@ -168,7 +156,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                       ),
                       SizedBox(height: 20),
 
-                      // Quantity selector
                       Text('Quantity:'),
                       Row(
                         children: [
@@ -193,7 +180,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                       ),
                       SizedBox(height: 20),
 
-                      // Date picker
                       Text('Start date:'),
                       SizedBox(height: 8),
                       InkWell(
@@ -266,7 +252,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                           ),
                         ),
 
-                        // Add helper text for same day rental
                         if (pickedDate!.isAtSameMomentAs(endDate!)) ...[
                           SizedBox(height: 8),
                           Text(
@@ -279,7 +264,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                           ),
                         ],
 
-                        // Duration summary
                         SizedBox(height: 16),
                         Text(
                           quantity.value == 1 &&
@@ -340,7 +324,6 @@ class _PurchaseListingState extends State<PurchaseListing>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product summary card
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -383,7 +366,6 @@ class _PurchaseListingState extends State<PurchaseListing>
 
                 SizedBox(height: 24),
 
-                // Rental details section (only for rent type)
                 if (listing.type == 'rent') ...[
                   Card(
                     elevation: 2,
@@ -404,7 +386,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                           ),
                           Divider(height: 24),
 
-                          // Date selection
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: Text('Rental Period'),
@@ -418,7 +399,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                             onTap: _showDatePicker,
                           ),
 
-                          // Quantity display
                           if (startDateController.text.isNotEmpty) ...[
                             ListTile(
                               contentPadding: EdgeInsets.zero,
@@ -434,7 +414,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                   SizedBox(height: 24),
                 ],
 
-                // Payment method section
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -454,10 +433,8 @@ class _PurchaseListingState extends State<PurchaseListing>
                         ),
                         Divider(height: 24),
 
-                        // Responsive payment method options layout
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            // If screen is wide enough, use row layout
                             if (constraints.maxWidth > 500) {
                               return Row(
                                 children: [
@@ -466,7 +443,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                                 ],
                               );
                             } else {
-                              // For smaller screens, use column layout
                               return Column(
                                 children: [
                                   _buildCashOption(),
@@ -483,7 +459,6 @@ class _PurchaseListingState extends State<PurchaseListing>
 
                 SizedBox(height: 32),
 
-                // Cost breakdown
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -533,7 +508,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                           return;
                         }
 
-                        // Get discount data
                         final rentalOption = listing.rentalOptions
                             ?.firstWhereOrNull(
                               (option) => option.id == selectedRentalOption,
@@ -546,7 +520,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                                   d.rentalOptionId == null),
                         );
 
-                        // Calculate price
                         double baseUnitPrice = 0;
                         if (listing.type == 'rent' && rentalOption != null) {
                           baseUnitPrice = rentalOption.price;
@@ -560,7 +533,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                             basePrice * discountPercent / 100;
                         final finalPrice = basePrice - discountAmount;
 
-                        // Handle payment based on selected method
                         if (selectedMethod == 'stripe') {
                           purchaseListingController.processDirectPayment(
                             productName: listing.name ?? 'Property listing',
@@ -581,7 +553,6 @@ class _PurchaseListingState extends State<PurchaseListing>
                                     : null,
                           );
                         } else {
-                          // Cash payment (existing flow)
                           purchaseListingController.createCashTransaction(
                             transactionType: listing.type!,
                             totalPrice: basePrice,
@@ -703,7 +674,6 @@ class PriceBreakdownWidget extends StatelessWidget {
 
     return Column(
       children: [
-        // Base price row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -713,20 +683,17 @@ class PriceBreakdownWidget extends StatelessWidget {
         ),
         SizedBox(height: 8),
 
-        // Quantity row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Text('Quantity'), Text('x $quantity')],
         ),
         SizedBox(height: 8),
 
-        // Subtotal row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Text('Subtotal'), Text(currencyFormat.format(basePrice))],
         ),
 
-        // Discount row (if applicable)
         if (discountPercent > 0) ...[
           SizedBox(height: 8),
           Row(
@@ -740,7 +707,6 @@ class PriceBreakdownWidget extends StatelessWidget {
 
         Divider(height: 24),
 
-        // Total row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
