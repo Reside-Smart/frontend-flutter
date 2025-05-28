@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:reside_smart_flutter/Services/AnalyticsService.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Services/CategoryService.dart';
 import 'package:reside_smart_flutter/Services/FavoriteService.dart';
@@ -20,7 +19,7 @@ class GlobalBinding extends Bindings {
     Get.put(FavoriteService(), permanent: true);
     Get.put(TransactionService(), permanent: true);
     Get.put(ReviewsService(), permanent: true);
-    Get.put(AnalyticsService(), permanent: true);
+
     Get.put(StripeService(), permanent: true);
   }
 }

@@ -22,7 +22,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height for responsive adjustments
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -32,8 +31,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, // Adjust horizontal padding
-            vertical: screenHeight * 0.02, // Adjust vertical padding
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: Obx(
             () => SingleChildScrollView(
@@ -53,13 +52,11 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
-                    SizedBox(
-                      height: screenHeight * 0.05, // Responsive spacing
-                    ),
+                    SizedBox(height: screenHeight * 0.05),
                     Center(
                       child: CircleAvatar(
                         backgroundColor: Theme.of(context).primaryColor,
-                        radius: 60, // Adjust radius as needed
+                        radius: 60,
                         child: Padding(
                           padding: EdgeInsets.all(10),
                           child: Icon(
@@ -70,9 +67,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: screenHeight * 0.06, // Responsive spacing
-                    ),
+                    SizedBox(height: screenHeight * 0.06),
                     // Name TextFormField
                     TextFormField(
                       controller: otpController,
@@ -80,8 +75,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                         labelText: "Enter Verification Code",
                         prefixIcon: const Icon(Icons.lock),
                         border: const OutlineInputBorder(),
-                        // errorText: authController.fieldErrors['full_name'],
-                        // Show full name error
                       ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
@@ -124,15 +117,13 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                               : const Text("Submit"),
                     ),
                     SizedBox(height: screenHeight * 0.03),
-                    // Already have an account? Text Button
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           "Didn't recieve an Email? ",
-                          style: TextStyle(
-                            fontSize: 16, // Responsive font size
-                          ),
+                          style: TextStyle(fontSize: 16),
                         ),
                         TextButton(
                           style: TextButton.styleFrom(

@@ -54,10 +54,8 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
     addressController.text =
         editProfileController.authService.globalUser!.address ?? '';
 
-    // Initialize location from user data
     editProfileController.initLocation();
 
-    // Initialize markers
     markers = {
       Marker(
         markerId: MarkerId('user_location'),
@@ -69,7 +67,6 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height for responsive adjustments
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -79,8 +76,8 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, // Adjust horizontal padding
-            vertical: screenHeight * 0.02, // Adjust vertical padding
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: Obx(
             () => SingleChildScrollView(
@@ -91,14 +88,12 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: screenHeight * 0.05, // Responsive spacing
-                    ),
+                    SizedBox(height: screenHeight * 0.05),
                     Center(
                       child: Stack(
                         children: [
                           Container(
-                            width: 90, // Slightly larger avatar
+                            width: 90,
                             height: 90,
                             child:
                                 editProfileController
@@ -128,8 +123,7 @@ class _EditProfileState extends State<EditProfile> with GlobalFunctions {
                               onPressed: _pickImage,
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                padding:
-                                    EdgeInsets.zero, // remove default padding
+                                padding: EdgeInsets.zero,
                               ),
                               child: Icon(
                                 Icons.edit,

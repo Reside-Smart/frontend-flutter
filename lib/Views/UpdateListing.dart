@@ -36,10 +36,8 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   final List<XFile> _images = [];
   final List<String> _oldImages = [];
 
-  LatLng selectedLocation = LatLng(
-    33.8547, // Default latitude (Lebanon)
-    35.8623, // Default longitude (Lebanon)
-  );
+  LatLng selectedLocation = LatLng(33.8547, 35.8623);
+
   Set<Marker> markers = {};
   final List<String> types = ['Rent', 'Sell'];
   String? selectedType;
@@ -50,7 +48,7 @@ class _UpdateListingPageState extends State<UpdateListingPage>
   final RentingOptionController rentPriceController = Get.put(
     RentingOptionController(),
   );
-  // Add this near your other state variables
+
   GoogleMapController? mapController;
   Future<void> _addImage() async {
     final picker = ImagePicker();
@@ -73,6 +71,10 @@ class _UpdateListingPageState extends State<UpdateListingPage>
     final listingId = Get.arguments['id'];
     updateListingController.setListingId(listingId);
     await updateListingController.getSingleListing(listingId);
+    selectedLocation = LatLng(
+      updateListingController.listing!.latitude!,
+      updateListingController.listing!.longitude!,
+    );
     listingStatus = updateListingController.listing!.status!;
     nameController.text = updateListingController.listing!.name ?? "";
     selectedCategory = updateListingController.listing!.categoryId!;
@@ -110,7 +112,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
     print('Longitude: ${updateListingController.listing!.longitude}');
 
     selectedLocation = LatLng(
-      // lebanon if no exists
       updateListingController.listing!.latitude ?? 33.8547,
       updateListingController.listing!.longitude ?? 35.8623,
     );
@@ -567,7 +568,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                           onMapCreated: (GoogleMapController controller) {
                             mapController = controller;
 
-                            // Move camera to the selected location when map is created
                             controller.animateCamera(
                               CameraUpdate.newCameraPosition(
                                 CameraPosition(
@@ -577,7 +577,6 @@ class _UpdateListingPageState extends State<UpdateListingPage>
                               ),
                             );
 
-                            // Set marker
                             setState(() {
                               markers = {
                                 Marker(

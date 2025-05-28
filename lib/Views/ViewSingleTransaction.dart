@@ -48,7 +48,6 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Use the new widget with isClickable set to false
                 TransactionCardWidget(
                   id: transaction.id!,
                   image:
@@ -64,7 +63,7 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
                   rentalOptions: transaction.listing!.rentalOptions ?? [],
                   selectedRentalOptionId: transaction.rentalOptionId,
                   discounts: transaction.listing!.discounts ?? [],
-                  quantity: transaction.quantity ?? 1, // Fixed this line
+                  quantity: transaction.quantity ?? 1,
                   isClickable: false,
                 ),
 
@@ -326,34 +325,35 @@ class _ViewSingleTransactionState extends State<ViewSingleTransaction> {
                   ],
                 ),
                 const SizedBox(height: 24),
+                if (transaction.sellerId != authService.globalUser!.id) ...[
+                  Text(
+                    'Love the estate?',
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
 
-                Text(
-                  'Love the estate?',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Get.toNamed(
-                        '/add-review',
-                        arguments: {'listingId': transaction.listingId},
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.toNamed(
+                          '/add-review',
+                          arguments: {'listingId': transaction.listingId},
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Click here to add review',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
-                    child: const Text(
-                      'Click here to add review',
-                      style: TextStyle(fontSize: 16),
-                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

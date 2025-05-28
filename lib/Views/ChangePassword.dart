@@ -35,8 +35,8 @@ class _ChangepasswordState extends State<Changepassword> with GlobalFunctions {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, // Adjust horizontal padding
-            vertical: screenHeight * 0.02, // Adjust vertical padding
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: Obx(
             () => SingleChildScrollView(
@@ -46,7 +46,6 @@ class _ChangepasswordState extends State<Changepassword> with GlobalFunctions {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Title Text
                     Center(
                       child: Text(
                         "You can change your password",
@@ -57,9 +56,7 @@ class _ChangepasswordState extends State<Changepassword> with GlobalFunctions {
                     ),
                     const SizedBox(height: 12),
 
-                    SizedBox(
-                      height: screenHeight * 0.05, // Responsive spacing
-                    ),
+                    SizedBox(height: screenHeight * 0.05),
 
                     TextFormField(
                       controller: oldPasswordController,

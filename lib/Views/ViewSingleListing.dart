@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Controllers/CategoryController.dart';
 import 'package:reside_smart_flutter/Controllers/ViewSingleListingController.dart';
+import 'package:reside_smart_flutter/Models/RentalOption.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
 import 'package:reside_smart_flutter/Views/ListingAllImages.dart';
@@ -250,12 +251,71 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                         listing.type == 'sell'
                             ? Column(
                               children: [
-                                Text(
-                                  listing.price?.toString() ?? 'no price',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.grey[800],
-                                  ),
+                                Builder(
+                                  builder: (_) {
+                                    final listingPrice = listing.price ?? 0.0;
+
+                                    final discount =
+                                        listing.discounts
+                                            ?.where(
+                                              (d) =>
+                                                  d.status == 'active' &&
+                                                  d.listingId == listing.id &&
+                                                  d.rentalOptionId == null,
+                                            )
+                                            .toList();
+
+                                    double discountedPrice = listingPrice;
+                                    bool isDiscounted = false;
+
+                                    if (discount != null &&
+                                        discount.isNotEmpty) {
+                                      final d = discount.first;
+                                      if (d.percentage != null &&
+                                          d.percentage! > 0) {
+                                        discountedPrice =
+                                            listingPrice *
+                                            (1 - d.percentage! / 100);
+                                        isDiscounted = true;
+                                      }
+                                    }
+
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isDiscounted) ...[
+                                          Text(
+                                            '\$${listingPrice.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.grey,
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            '\$${discountedPrice.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).primaryColor,
+                                            ),
+                                          ),
+                                        ] else
+                                          Text(
+                                            '\$${listingPrice.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.grey[800],
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
                                 ),
                                 SizedBox(height: 4),
                                 Container(
@@ -324,9 +384,75 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                                     listing.rentalOptions!
                                         .where((option) => option.is_cancelled)
                                         .map((option) {
+                                          final matchingDiscount =
+                                              listing.discounts
+                                                  ?.where(
+                                                    (d) =>
+                                                        d.status == 'active' &&
+                                                        d.listingId ==
+                                                            listing.id &&
+                                                        (d.rentalOptionId ==
+                                                                option.id ||
+                                                            d.rentalOptionId ==
+                                                                null),
+                                                  )
+                                                  .toList();
+
+                                          final originalPrice =
+                                              option.price ?? 0;
+                                          double finalPrice = originalPrice;
+                                          bool isDiscounted = false;
+
+                                          if (matchingDiscount != null &&
+                                              matchingDiscount.isNotEmpty) {
+                                            final discount =
+                                                matchingDiscount.first;
+                                            if (discount.percentage != null &&
+                                                discount.percentage! > 0) {
+                                              finalPrice =
+                                                  originalPrice *
+                                                  (1 -
+                                                      discount.percentage! /
+                                                          100);
+                                              isDiscounted = true;
+                                            }
+                                          }
+
                                           return ChoiceChip(
-                                            label: Text(
-                                              '${option.duration} ${option.unit} ${option.price}',
+                                            label: SizedBox(
+                                              height: 42,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "\$${isDiscounted ? originalPrice.toStringAsFixed(2) : finalPrice.toStringAsFixed(2)}",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      decoration:
+                                                          isDiscounted
+                                                              ? TextDecoration
+                                                                  .lineThrough
+                                                              : TextDecoration
+                                                                  .none,
+                                                      color:
+                                                          isDiscounted
+                                                              ? Colors.grey
+                                                              : Colors.black,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    isDiscounted
+                                                        ? "\$${finalPrice.toStringAsFixed(2)} - ${option.duration} ${option.unit}"
+                                                        : "${option.duration} ${option.unit}",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             selected:
                                                 selectedRentalOption ==
@@ -347,30 +473,6 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                                                       ? Colors.white
                                                       : Colors.black,
                                             ),
-                                          );
-                                        })
-                                        .toList()
-                                        .asMap()
-                                        .entries
-                                        .map((entry) {
-                                          int index = entry.key;
-                                          Widget text = entry.value;
-                                          return Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              text,
-                                              if (index !=
-                                                  listing
-                                                          .rentalOptions!
-                                                          .length -
-                                                      1)
-                                                Text(
-                                                  " -",
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                            ],
                                           );
                                         })
                                         .toList(),
@@ -451,30 +553,29 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  child:
-                                      listing.user!.image != null
-                                          ? viewSingleListingController
-                                                  .isLoading
-                                                  .value
-                                              ? CircularProgressIndicator(
-                                                color:
-                                                    Theme.of(
-                                                      context,
-                                                    ).primaryColor,
-                                              )
-                                              : ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                                child: MyNetworkImage(
-                                                  url:
-                                                      "storage/${listing.user!.image}",
-                                                ),
-                                              )
-                                          : Icon(Icons.person, size: 90),
-                                ),
+                                listing.user!.image != null
+                                    ? viewSingleListingController
+                                            .isLoading
+                                            .value
+                                        ? CircularProgressIndicator(
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                        : ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            50,
+                                          ),
+                                          child: SizedBox(
+                                            width: 70,
+                                            height: 70,
+                                            child: MyNetworkImage(
+                                              url:
+                                                  "storage/${listing.user!.image!}",
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                    : Icon(Icons.person, size: 90),
+
                                 Column(
                                   children: [
                                     Text(
@@ -519,7 +620,6 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                       ),
                     ),
                     SizedBox(height: 12),
-                    // Replace the Container on line 520 with this Google Maps implementation
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
@@ -530,8 +630,7 @@ class _ViewSinglelistingState extends State<ViewSinglelisting> {
                         child: GoogleMap(
                           initialCameraPosition: CameraPosition(
                             target: LatLng(
-                              listing.latitude ??
-                                  33.8547, // Default to Lebanon if null
+                              listing.latitude ?? 33.8547,
                               listing.longitude ?? 35.8623,
                             ),
                             zoom: 14.0,

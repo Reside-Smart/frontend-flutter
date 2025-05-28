@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Models/TransactionModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:dio/dio.dart' as dio;

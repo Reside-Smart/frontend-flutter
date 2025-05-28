@@ -60,6 +60,7 @@ class PurchaseListingController extends GetxController {
         await transactionService.purchaseListing(formData: formData);
 
         AppDialog.showSuccess('Payment successful');
+        Get.toNamed('/transactions');
       } else {
         AppDialog.showError(paymentResult.message);
       }
@@ -104,6 +105,7 @@ class PurchaseListingController extends GetxController {
       });
 
       await transactionService.purchaseListing(formData: formData);
+      // Get.toNamed('/transactions');
     } catch (e) {
       _handleError(e);
     } finally {
