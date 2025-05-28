@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Services/CategoryService.dart';
 import 'package:reside_smart_flutter/Services/FavoriteService.dart';
+import 'package:reside_smart_flutter/Services/FirebaseService.dart';
 import 'package:reside_smart_flutter/Services/ListingDiscountService.dart';
 import 'package:reside_smart_flutter/Services/ListingService.dart';
 import 'package:reside_smart_flutter/Services/ReviewService.dart';
@@ -21,5 +22,7 @@ class GlobalBinding extends Bindings {
     Get.put(ReviewsService(), permanent: true);
 
     Get.put(StripeService(), permanent: true);
+
+    Get.find<FirebaseService>().init();
   }
 }

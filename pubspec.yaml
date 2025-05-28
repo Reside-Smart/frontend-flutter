@@ -49,6 +49,11 @@ dependencies:
   google_maps_flutter: any
   flutter_launcher_icons: any
   flutter_stripe: ^9.4.0
+  flutter_local_notifications: any
+  firebase_core: any
+  firebase_messaging: any
+  badges: any
+  shimmer: ^3.0.0
 
 flutter_launcher_icons:
   android: true

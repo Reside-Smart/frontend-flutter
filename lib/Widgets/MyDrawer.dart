@@ -90,7 +90,14 @@ class MyDrawer extends StatelessWidget {
             leading: Icon(Icons.notifications),
             title: Text("Notifications"),
             onTap: () {
-              // Handle action
+              Get.toNamed('/notifications');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.notifications),
+            title: Text("Notification Settings"),
+            onTap: () {
+              Get.toNamed('/notifications/settings');
             },
           ),
 

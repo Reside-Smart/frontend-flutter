@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:reside_smart_flutter/Services/FirebaseService.dart';
 import '../Controllers/BottomNavBarController.dart';
 
 class BottomNavBar extends StatelessWidget {

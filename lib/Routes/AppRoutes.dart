@@ -25,6 +25,8 @@ import 'package:reside_smart_flutter/Views/Discount.dart';
 import 'package:reside_smart_flutter/Views/ForgetPassword.dart';
 import 'package:reside_smart_flutter/Views/HomePage.dart';
 import 'package:reside_smart_flutter/Views/Landing.dart';
+import 'package:reside_smart_flutter/Views/NotificationSettingsScreen.dart';
+import 'package:reside_smart_flutter/Views/NotificationsScreen.dart';
 import 'package:reside_smart_flutter/Views/ProfilePage.dart';
 import 'package:reside_smart_flutter/Views/PurchaseListing.dart';
 import 'package:reside_smart_flutter/Views/SignIn.dart';
@@ -72,6 +74,8 @@ class AppRoutes {
   static const String viewReviews = '/view-review';
   static const String filter = '/filter';
   static const String dashboard = '/dashboard';
+  static const String notifications = '/notifications';
+  static const String notificationSettings = '/notifications/settings';
 
   static List<GetPage> routes = [
     GetPage(name: splash, page: () => SplashPage()),
@@ -158,5 +162,10 @@ class AppRoutes {
     GetPage(name: viewReviews, page: () => ViewAllReviews()),
     GetPage(name: filter, page: () => FilterPage(), binding: FilterBinding()),
     GetPage(name: dashboard, page: () => DashboardPage()),
+    GetPage(name: notifications, page: () => NotificationsScreen()),
+    GetPage(
+      name: notificationSettings,
+      page: () => NotificationSettingsScreen(),
+    ),
   ];
 }
