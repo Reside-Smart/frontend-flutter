@@ -48,7 +48,6 @@ class _DashboardPageState extends State<DashboardPage>
         return Column(
           children: [
             Container(
-              // color: Theme.of(context).primaryColor,
               child: TabBar(
                 controller: _tabController,
                 isScrollable: true,
@@ -698,8 +697,8 @@ class _DashboardPageState extends State<DashboardPage>
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     _revenueTimeframe == 'year'
-                        ? label.substring(5) // Show only MM for year view
-                        : label.substring(5), // Show MM-DD for month/week view
+                        ? label.substring(5)
+                        : label.substring(5),
                     style: const TextStyle(fontSize: 10),
                   ),
                 );

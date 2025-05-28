@@ -492,7 +492,6 @@ class _PurchaseListingState extends State<PurchaseListing>
 
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(

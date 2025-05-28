@@ -40,7 +40,6 @@ class _LandingPageState extends State<LandingPage> {
               controller: _pageController,
               onPageChanged: (index) {
                 if (selectedPage == (pages.length - 1)) {
-                  // Get.toNamed('login');
                   print('hello');
                 }
 
@@ -92,7 +91,7 @@ class _LandingPageState extends State<LandingPage> {
               },
             ),
           ),
-          // Page Indicator
+
           PageViewDotIndicator(
             currentItem: selectedPage,
             count: pages.length,

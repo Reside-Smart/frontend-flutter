@@ -28,7 +28,6 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height for responsive adjustments
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -38,8 +37,8 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, // Adjust horizontal padding
-            vertical: screenHeight * 0.02, // Adjust vertical padding
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: SingleChildScrollView(
             child: Form(
@@ -51,9 +50,7 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                   // Title Text
                   const SizedBox(height: 12),
                   MyTitle(title: "Create an Account"),
-                  SizedBox(
-                    height: screenHeight * 0.05, // Responsive spacing
-                  ),
+                  SizedBox(height: screenHeight * 0.05),
                   // Name TextFormField
                   Obx(
                     () => TextFormField(
@@ -190,15 +187,13 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  // Already have an account? Text Button
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Already have an account? ",
-                        style: TextStyle(
-                          fontSize: 16, // Responsive font size
-                        ),
+                        style: TextStyle(fontSize: 16),
                       ),
                       TextButton(
                         style: TextButton.styleFrom(
@@ -213,7 +208,7 @@ class _SignUpPageState extends State<SignUpPage> with GlobalFunctions {
                           "Login",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16, // Responsive font size
+                            fontSize: 16,
                           ),
                         ),
                       ),

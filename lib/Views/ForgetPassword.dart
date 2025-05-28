@@ -23,7 +23,6 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height for responsive adjustments
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -33,8 +32,8 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, // Adjust horizontal padding
-            vertical: screenHeight * 0.02, // Adjust vertical padding
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: Obx(
             () => SingleChildScrollView(
@@ -44,7 +43,6 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Title Text
                     const SizedBox(height: 12),
                     MyTitle(title: 'Forget Password'),
                     const SizedBox(height: 14),
@@ -54,10 +52,8 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
-                    SizedBox(
-                      height: 40, // Responsive spacing
-                    ),
-                    // Name TextFormField
+                    SizedBox(height: 40),
+
                     TextFormField(
                       controller: emailController,
                       decoration: InputDecoration(
@@ -65,7 +61,6 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                         prefixIcon: const Icon(Icons.email),
                         errorText:
                             _forgetPasswordController.fieldErrors['email'],
-                        // Show full name error
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -78,7 +73,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                       },
                     ),
                     SizedBox(height: 24),
-                    // ForgetPasswordPage Button
+
                     ElevatedButton(
                       onPressed: () {
                         if (!_forgetPasswordController.isLoading.value &&
@@ -100,7 +95,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage>
                               : const Text("Submit"),
                     ),
                     SizedBox(height: screenHeight * 0.03),
-                    // Already have an account? Text Button
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

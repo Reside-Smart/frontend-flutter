@@ -23,8 +23,3 @@ class SplashPage extends StatelessWidget {
     );
   }
 }
-// Image.asset(
-//           'images/logo.png',
-//           fit: BoxFit.contain,
-//           height: MediaQuery.of(context).size.height * 0.4,
-//         )

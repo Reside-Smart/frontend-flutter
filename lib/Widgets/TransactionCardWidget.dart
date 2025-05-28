@@ -66,14 +66,14 @@ class TransactionCardWidget extends StatelessWidget {
       final activeDiscount = getActiveDiscountForSelectedOption();
 
       if (type == 'rent' && selectedOption != null) {
-        originalPrice = selectedOption.price * quantity; // Multiply by quantity
+        originalPrice = selectedOption.price;
         if (activeDiscount != null && activeDiscount.percentage != null) {
           double discounted =
               originalPrice -
               (originalPrice * (activeDiscount.percentage! / 100));
           return '\$${discounted.toStringAsFixed(2)} (${activeDiscount.percentage!}% off)';
         }
-        return '\$${originalPrice.toStringAsFixed(2)} for $quantity ${selectedOption.unit}';
+        return '\$${originalPrice.toStringAsFixed(1)}/ ${selectedOption.duration}  ${selectedOption.unit}';
       } else {
         originalPrice = double.tryParse(price) ?? 0.0;
         if (activeDiscount != null && activeDiscount.percentage != null) {
@@ -168,9 +168,36 @@ class TransactionCardWidget extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
+                    if (quantity > 1 && type == 'rent')
+                      Container(
+                        margin: EdgeInsets.only(top: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          "Quantity: $quantity",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 6),
+                if (quantity > 1 && type == 'rent')
+                  Text(
+                    "Total price: ${quantity * selectedOption!.price}",
+                    style: TextStyle(fontSize: 14),
+                  ),
+
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     const Icon(Icons.star, size: 14, color: Colors.amber),
@@ -178,24 +205,7 @@ class TransactionCardWidget extends StatelessWidget {
                     Text(rating, style: const TextStyle(fontSize: 12)),
                   ],
                 ),
-                const SizedBox(height: 4),
-                if (quantity > 1 && type == 'rent')
-                  Container(
-                    margin: EdgeInsets.only(top: 4),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      "Quantity: $quantity",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+
                 const SizedBox(height: 2),
                 Text(
                   "For $type",

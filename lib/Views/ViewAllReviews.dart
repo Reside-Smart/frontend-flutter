@@ -168,22 +168,31 @@ class _ViewAllReviewsState extends State<ViewAllReviews> {
                                           children: [
                                             Row(
                                               children: [
-                                                Text(
-                                                  userReviews[0].user?.id ==
-                                                          authService
-                                                              .globalUser
-                                                              ?.id
-                                                      ? 'You'
-                                                      : userReviews[0]
-                                                              .user
-                                                              ?.name ??
-                                                          'Unknown',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey[800],
+                                                SizedBox(
+                                                  width: 50,
+                                                  child: Text(
+                                                    userReviews[0].user?.id ==
+                                                            authService
+                                                                .globalUser
+                                                                ?.id
+                                                        ? 'You'
+                                                        : userReviews[0]
+                                                                .user
+                                                                ?.name ??
+                                                            'Unknown',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey[800],
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    softWrap: false,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
+
+                                                const SizedBox(width: 5),
                                                 Text(
                                                   formatReviewDate(
                                                     userReviews[0].createdAt,

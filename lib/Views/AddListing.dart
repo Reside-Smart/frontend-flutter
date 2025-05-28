@@ -41,7 +41,7 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
   int? selectedCategory;
 
   final featureController = Get.put(FeatureController());
-  // final rentPriceController = Get.put(RentPriceController());
+
   final RentingOptionController rentPriceController = Get.put(
     RentingOptionController(),
   );
@@ -83,12 +83,12 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                 width: 325,
                 height: 325,
                 decoration: BoxDecoration(
-                  color: const Color(0x3325B4F8), // 20% opacity
+                  color: const Color(0x3325B4F8),
                   shape: BoxShape.circle,
                 ),
               ),
             ),
-            // Smaller more opaque circle
+
             Positioned(
               top: 150,
               right: -50,
@@ -96,7 +96,7 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: const Color(0x6625B4F8), // 40% opacity
+                  color: const Color(0x6625B4F8),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -117,7 +117,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                     ),
                     SizedBox(height: 40),
 
-                    // Name
                     Text(
                       "Name:",
                       style: TextStyle(
@@ -139,7 +138,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                     ),
                     SizedBox(height: 30),
 
-                    // Category Chips
                     Text(
                       "Listing Category:",
                       style: TextStyle(
@@ -235,7 +233,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Row(
                                   children: [
-                                    // Duration
                                     Expanded(
                                       child: TextFormField(
                                         controller: rentField.duration,
@@ -247,7 +244,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                     ),
                                     SizedBox(width: 8),
 
-                                    // Unit (Dropdown)
                                     Expanded(
                                       child: Obx(
                                         () => DropdownButtonFormField<String>(
@@ -275,7 +271,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                     ),
                                     SizedBox(width: 8),
 
-                                    // Price
                                     Expanded(
                                       child: TextFormField(
                                         controller: rentField.price,
@@ -286,7 +281,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                                       ),
                                     ),
 
-                                    // Delete Button
                                     IconButton(
                                       icon: Icon(
                                         Icons.delete,
@@ -396,7 +390,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                             });
                           },
                           onMapCreated: (GoogleMapController controller) {
-                            // Initialize the marker at the default location
                             setState(() {
                               markers = {
                                 Marker(
@@ -418,7 +411,7 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 8),
-                    // Images
+
                     Text(
                       "Add Images:",
                       style: TextStyle(
@@ -507,10 +500,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                     ),
                     SizedBox(height: 16.0),
 
-                    // Price
-                    SizedBox(height: 10),
-
-                    // Listing Features
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -577,7 +566,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                     ),
                     SizedBox(height: 30),
 
-                    // Description
                     Text(
                       "Description",
                       style: TextStyle(
@@ -605,7 +593,6 @@ class _AddListingPageState extends State<AddListingPage> with GlobalFunctions {
                     ),
                     SizedBox(height: 40),
 
-                    // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [

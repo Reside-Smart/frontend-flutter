@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reside_smart_flutter/Models/DashboardModels.dart';
-import 'package:reside_smart_flutter/Services/AnalyticsService.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
 import 'package:reside_smart_flutter/Services/AuthService.dart';
 import 'package:reside_smart_flutter/Services/DashboardService.dart';
@@ -22,7 +21,6 @@ class _ProfilePageState extends State<ProfilePage> {
   int selectedTab = 0;
   bool isLoading = false;
   final AuthService authService = Get.find<AuthService>();
-  final AnalyticsService analyticsService = Get.find<AnalyticsService>();
   final Rx<OverviewData> overview = OverviewData().obs;
   final Rx<RevenueData> revenueData = RevenueData().obs;
 
@@ -224,8 +222,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     _revenueTimeframe == 'year'
-                        ? label.substring(5) // Show only MM for year view
-                        : label.substring(5), // Show MM-DD for month/week view
+                        ? label.substring(5)
+                        : label.substring(5),
                     style: const TextStyle(fontSize: 10),
                   ),
                 );
@@ -302,7 +300,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
           SizedBox(height: 24),
 
-          // Stats cards
           Row(
             children: [
               Expanded(
@@ -350,7 +347,6 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 24),
           _buildSectionTitle('Revenue Over Time'),
 
-          // Revenue timeframe selector
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Row(
@@ -365,7 +361,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // Revenue chart
           Obx(() {
             if (dashboardService.revenueData.value.timeframe.isEmpty) {
               return const Center(
@@ -382,7 +377,6 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 24),
           _buildSectionTitle('Recent Activity'),
 
-          // Activity stats
           Obx(() {
             final activity = dashboardService.activity.value;
             return Column(
@@ -419,7 +413,6 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }),
 
-          // Bottom view full dashboard button
           SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
@@ -496,24 +489,24 @@ class _ProfilePageState extends State<ProfilePage> {
               Center(
                 child: Stack(
                   children: [
-                    Container(
-                      width: 90,
-                      height: 90,
-                      child:
-                          authService.globalUser?.image != null
-                              ? isLoading
-                                  ? CircularProgressIndicator(
-                                    color: Theme.of(context).primaryColor,
-                                  )
-                                  : ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: MyNetworkImage(
-                                      url:
-                                          "storage/${authService.globalUser?.image}",
-                                    ),
-                                  )
-                              : Icon(Icons.person, size: 90),
-                    ),
+                    authService.globalUser?.image != null
+                        ? isLoading
+                            ? CircularProgressIndicator(
+                              color: Theme.of(context).primaryColor,
+                            )
+                            : ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: SizedBox(
+                                width: 90,
+                                height: 90,
+                                child: MyNetworkImage(
+                                  url:
+                                      "storage/${authService.globalUser?.image}",
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                        : Icon(Icons.person, size: 90),
                   ],
                 ),
               ),
