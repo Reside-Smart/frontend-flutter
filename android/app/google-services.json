@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991486436559",
+    "project_id": "reside-smart",
+    "storage_bucket": "reside-smart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991486436559:android:0a0b8f81384e1fea1b03ba",
+        "android_client_info": {
+          "package_name": "com.example.reside_smart_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJIZSiIfgr7baokCyuWkANRhKqq98CGtQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

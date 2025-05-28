@@ -5,8 +5,6 @@ import 'package:reside_smart_flutter/Services/AuthService.dart';
 class SplashPage extends StatelessWidget {
   SplashPage({super.key});
 
-  final AuthService authService = Get.find<AuthService>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,8 +21,3 @@ class SplashPage extends StatelessWidget {
     );
   }
 }
-// Image.asset(
-//           'images/logo.png',
-//           fit: BoxFit.contain,
-//           height: MediaQuery.of(context).size.height * 0.4,
-//         )

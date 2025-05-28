@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:reside_smart_flutter/Services/FirebaseService.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MyAppBar({super.key});
+  MyAppBar({super.key});
+  final FirebaseService _firebaseService = Get.find<FirebaseService>();
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,19 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         'ResideSmart',
         style: TextStyle(color: Theme.of(context).primaryColor),
       ),
+      actions: [
+        // Then in your build method, add a badge to the notifications icon
+        Obx(
+          () => Badge(
+            isLabelVisible: _firebaseService.unreadCount.value > 0,
+            label: Text(
+              _firebaseService.unreadCount.value.toString(),
+              style: TextStyle(color: Colors.white, fontSize: 10),
+            ),
+            child: Icon(Icons.notifications),
+          ),
+        ),
+      ],
       centerTitle: true,
     );
   }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:reside_smart_flutter/Models/UserModel.dart';
 import 'package:reside_smart_flutter/Services/Api.dart';
+import 'package:reside_smart_flutter/Services/FirebaseService.dart';
 import 'package:reside_smart_flutter/Utils/Dialog.dart';
 
 class AuthService extends GetxService {
@@ -85,6 +86,12 @@ class AuthService extends GetxService {
     });
 
     GetStorage().write('login_token', user.token);
+
+    // Register FCM token after successful login
+    if (Get.isRegistered<FirebaseService>()) {
+      await Get.find<FirebaseService>().registerDeviceToken();
+    }
+
     return user;
   }
 
@@ -108,6 +115,11 @@ class AuthService extends GetxService {
 
   Future<void> logout() async {
     try {
+      // Unregister FCM token before logging out
+      if (Get.isRegistered<FirebaseService>()) {
+        await Get.find<FirebaseService>().unregisterDeviceToken();
+      }
+
       final response = await Api.dio.post('/logout');
 
       if (response.statusCode == 200) {

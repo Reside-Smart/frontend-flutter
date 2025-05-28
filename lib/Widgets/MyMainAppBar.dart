@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 
 class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final List<Widget>? actions;
 
-  const MyMainAppBar({super.key, required this.title});
+  const MyMainAppBar({super.key, required this.title, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
       surfaceTintColor: Colors.transparent,
       title: Text(title, style: TextStyle(color: Colors.black)),
       centerTitle: true,
+      actions: actions,
     );
   }
 
